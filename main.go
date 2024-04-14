@@ -8,68 +8,89 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
+const (
+	default_issue_regex = "#[0-9]+"
+)
+
 func main() {
+	commitMessage := getCommitMessage()
+
+	issueRegex := default_issue_regex
+
+	commitCfg := readCommitConfig()
+	if commitCfg.IssueRegex != "" {
+		issueRegex = commitCfg.IssueRegex
+	}
+
+	repo := openRepo()
+	headRef := getCurrentHead(repo)
+
+	// Read branch name or HEAD
+	if headRef.Name().IsBranch() {
+
+		branchName := headRef.Name().Short()
+
+		matches := findIssueNumbersInBranch(issueRegex, branchName)
+
+		if len(matches) > 0 {
+			joinedIssues := strings.Join(matches, ", ")
+			commitMessage = fmt.Sprintf("[%s]: %s", joinedIssues, commitMessage)
+		}
+
+		commitChanges(repo, commitMessage)
+
+		fmt.Println(commitMessage)
+
+	} else if headRef.Name().IsTag() {
+		fmt.Printf("HEAD is a tag: %v\n", headRef.Name().Short())
+	} else {
+		fmt.Printf("Detached HEAD at %v\n", headRef.Hash())
+	}
+}
+
+// Reads commit message from command line arguments
+func getCommitMessage() string {
 	args := os.Args[1:]
 	if len(args) < 1 {
 		fmt.Fprintln(os.Stderr, red("Commit message cannot be empty"))
 		os.Exit(1)
 	}
 
-	var commitMessage string
-	commitMessage = args[0]
+	return args[0]
+}
 
-	// Open the repository in the current directory
+// Opens the repository in current directory
+func openRepo() *git.Repository {
 	repo, err := git.PlainOpen(".")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, red("Failed to open repository: %v\n"), err)
 		os.Exit(1)
 	}
+	return repo
+}
 
-	// Get current HEAD
-	ref, err := repo.Head()
+// Reads the current HEAD reference
+func getCurrentHead(repo *git.Repository) *plumbing.Reference {
+	headRef, err := repo.Head()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, red("Failed to read current HEAD: %v\n"), err)
 		os.Exit(1)
 	}
+	return headRef
+}
 
-	// Read branch name or HEAD
-	if ref.Name().IsBranch() {
-
-		branchName := ref.Name().Short()
-
-		// TODO: Add support for custom regex
-		matchesArray := findIssueNumbersInBranch(`#[0-9]+`, branchName)
-
-		if len(matchesArray) > 0 {
-			joinedIssues := strings.Join(matchesArray, ", ")
-			commitMessage = fmt.Sprintf("[%s]: %s", joinedIssues, commitMessage)
-		}
-
-		worktree, err := repo.Worktree()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, red("Failed to open worktree: %v\n"), err)
-			os.Exit(1)
-		}
-
-		usr := getUser(*repo)
-		commitOptions := makeCommitOptions(usr)
-
-		_, err = worktree.Commit(commitMessage, &commitOptions)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, red("Failed to commit: %v\n"), err)
-			os.Exit(1)
-		}
-
-		fmt.Println(commitMessage)
-
-	} else if ref.Name().IsTag() {
-		fmt.Printf("HEAD is a tag: %v\n", ref.Name().Short())
-	} else {
-		fmt.Printf("Detached HEAD at %v\n", ref.Hash())
+// Opens worktree
+func openWorktree(repo *git.Repository) *git.Worktree {
+	worktree, err := repo.Worktree()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, red("Failed to open worktree: %v\n"), err)
+		os.Exit(1)
 	}
+	return worktree
 }
 
 // Wraps the message string in red color
@@ -79,17 +100,16 @@ func red(msg string) string {
 
 // Searches the branch name for issue numbers matching the given regex
 func findIssueNumbersInBranch(rgxRaw string, branchName string) []string {
-	// TODO: Don't use MustCompile, handle errors
 	rgx := regexp.MustCompile(rgxRaw)
 
-	matches := rgx.FindAllStringSubmatch(branchName, -1)
-	matchesArray := []string{}
+	allSubmatches := rgx.FindAllStringSubmatch(branchName, -1)
 
-	for _, match := range matches {
-		matchesArray = append(matchesArray, match...)
+	matches := []string{}
+	for _, submatches := range allSubmatches {
+		matches = append(matches, submatches[0])
 	}
 
-	return matchesArray
+	return matches
 }
 
 // Creates commit options with the author information
@@ -102,5 +122,18 @@ func makeCommitOptions(usr user) git.CommitOptions {
 		},
 		AllowEmptyCommits: false,
 		Amend:             false,
+	}
+}
+
+// Commits changes with provided message
+func commitChanges(repo *git.Repository, commitMessage string) {
+	worktree := openWorktree(repo)
+	usr := getUser(*repo)
+	commitOptions := makeCommitOptions(usr)
+
+	_, err := worktree.Commit(commitMessage, &commitOptions)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, red("Failed to commit: %v\n"), err)
+		os.Exit(1)
 	}
 }
