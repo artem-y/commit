@@ -13,23 +13,23 @@ type commitConfig struct {
 // Reads .commit.json file from current directory and unmarshals it into commitConfig struct
 func readCommitConfig() commitConfig {
 
-	configFileName := ".commit.json"
+	configFilePath := default_config_file_path
 
-	_, err := os.Stat(configFileName)
+	_, err := os.Stat(configFilePath)
 	if os.IsNotExist(err) {
 		return commitConfig{}
 	}
 
-	file, err := os.ReadFile(configFileName)
+	file, err := os.ReadFile(configFilePath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, red("Error reading %s file: %v\n"), err, configFileName)
+		fmt.Fprintf(os.Stderr, red("Error reading %s file: %v\n"), err, configFilePath)
 		os.Exit(1)
 	}
 
 	var cfg commitConfig
 	err = json.Unmarshal(file, &cfg)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, red("Error unmarshalling %s file: %v\n"), err, configFileName)
+		fmt.Fprintf(os.Stderr, red("Error unmarshalling %s file: %v\n"), err, configFilePath)
 		os.Exit(1)
 	}
 
