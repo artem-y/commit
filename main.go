@@ -12,10 +12,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-const (
-	default_issue_regex = "#[0-9]+"
-)
-
 func main() {
 	commitMessage := getCommitMessage()
 
@@ -33,8 +29,7 @@ func main() {
 	if headRef.Name().IsBranch() {
 
 		branchName := headRef.Name().Short()
-
-		matches := findIssueNumbersInBranch(issueRegex, branchName)
+		matches := findIssueMatchesInBranch(issueRegex, branchName)
 
 		if len(matches) > 0 {
 			joinedIssues := strings.Join(matches, ", ")
@@ -99,7 +94,7 @@ func red(msg string) string {
 }
 
 // Searches the branch name for issue numbers matching the given regex
-func findIssueNumbersInBranch(rgxRaw string, branchName string) []string {
+func findIssueMatchesInBranch(rgxRaw string, branchName string) []string {
 	rgx := regexp.MustCompile(rgxRaw)
 
 	allSubmatches := rgx.FindAllStringSubmatch(branchName, -1)
