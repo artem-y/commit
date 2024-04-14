@@ -2,10 +2,7 @@ module github.com/artem-y/commit
 
 go 1.21.4
 
-require (
-	github.com/go-git/go-git v4.7.0+incompatible
-	github.com/go-git/go-git/v5 v5.12.0
-)
+require github.com/go-git/go-git/v5 v5.12.0
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
