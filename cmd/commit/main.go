@@ -7,6 +7,10 @@ import (
 	"strings"
 	"time"
 
+    "github.com/artem-y/commit/internal/config"
+    "github.com/artem-y/commit/internal/helpers"
+    "github.com/artem-y/commit/internal/user"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -15,9 +19,9 @@ import (
 func main() {
 	commitMessage := getCommitMessage()
 
-	issueRegex := default_issue_regex
+	issueRegex := helpers.DEFAULT_ISSUE_REGEX
 
-	commitCfg := readCommitConfig()
+	commitCfg := config.ReadCommitConfig()
 	if commitCfg.IssueRegex != "" {
 		issueRegex = commitCfg.IssueRegex
 	}
@@ -51,7 +55,7 @@ func main() {
 func getCommitMessage() string {
 	args := os.Args[1:]
 	if len(args) < 1 {
-		fmt.Fprintln(os.Stderr, red("Commit message cannot be empty"))
+		fmt.Fprintln(os.Stderr, helpers.Red("Commit message cannot be empty"))
 		os.Exit(1)
 	}
 
@@ -62,7 +66,7 @@ func getCommitMessage() string {
 func openRepo() *git.Repository {
 	repo, err := git.PlainOpen(".")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, red("Failed to open repository: %v\n"), err)
+		fmt.Fprintf(os.Stderr, helpers.Red("Failed to open repository: %v\n"), err)
 		os.Exit(1)
 	}
 	return repo
@@ -72,7 +76,7 @@ func openRepo() *git.Repository {
 func getCurrentHead(repo *git.Repository) *plumbing.Reference {
 	headRef, err := repo.Head()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, red("Failed to read current HEAD: %v\n"), err)
+		fmt.Fprintf(os.Stderr, helpers.Red("Failed to read current HEAD: %v\n"), err)
 		os.Exit(1)
 	}
 	return headRef
@@ -82,15 +86,10 @@ func getCurrentHead(repo *git.Repository) *plumbing.Reference {
 func openWorktree(repo *git.Repository) *git.Worktree {
 	worktree, err := repo.Worktree()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, red("Failed to open worktree: %v\n"), err)
+		fmt.Fprintf(os.Stderr, helpers.Red("Failed to open worktree: %v\n"), err)
 		os.Exit(1)
 	}
 	return worktree
-}
-
-// Wraps the message string in red color
-func red(msg string) string {
-	return fmt.Sprintf("\033[31m%s\033[0m", msg)
 }
 
 // Searches the branch name for issue numbers matching the given regex
@@ -108,11 +107,11 @@ func findIssueMatchesInBranch(rgxRaw string, branchName string) []string {
 }
 
 // Creates commit options with the author information
-func makeCommitOptions(usr user) git.CommitOptions {
+func makeCommitOptions(usr user.User) git.CommitOptions {
 	return git.CommitOptions{
 		Author: &object.Signature{
-			Name:  usr.name,
-			Email: usr.email,
+			Name:  usr.Name,
+			Email: usr.Email,
 			When:  time.Now(),
 		},
 		AllowEmptyCommits: false,
@@ -123,12 +122,12 @@ func makeCommitOptions(usr user) git.CommitOptions {
 // Commits changes with provided message
 func commitChanges(repo *git.Repository, commitMessage string) {
 	worktree := openWorktree(repo)
-	usr := getUser(*repo)
+	usr := user.GetUser(*repo)
 	commitOptions := makeCommitOptions(usr)
 
 	_, err := worktree.Commit(commitMessage, &commitOptions)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, red("Failed to commit: %v\n"), err)
+		fmt.Fprintf(os.Stderr, helpers.Red("Failed to commit: %v\n"), err)
 		os.Exit(1)
 	}
 }
