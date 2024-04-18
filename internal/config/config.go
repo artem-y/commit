@@ -14,10 +14,9 @@ type commitConfig struct {
 	OutputIssueSuffix string `json:"outputIssueSuffix"`
 }
 
-// Reads .commit.json file from current directory and unmarshals it into commitConfig struct
-func ReadCommitConfig() commitConfig {
+// Reads config at the file path and unmarshals it into commitConfig struct
+func ReadCommitConfig(configFilePath string) commitConfig {
 
-	configFilePath := helpers.DEFAULT_CONFIG_FILE_PATH
 	var cfg commitConfig
 
 	_, err := os.Stat(configFilePath)
