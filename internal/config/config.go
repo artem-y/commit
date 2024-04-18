@@ -9,9 +9,9 @@ import (
 )
 
 type commitConfig struct {
-	IssueRegex        string `json:"issueRegex"`
-	OutputIssuePrefix string `json:"outputIssuePrefix"`
-	OutputIssueSuffix string `json:"outputIssueSuffix"`
+	IssueRegex        string  `json:"issueRegex"`
+	OutputIssuePrefix *string `json:"outputIssuePrefix"`
+	OutputIssueSuffix *string `json:"outputIssueSuffix"`
 }
 
 // Reads config at the file path and unmarshals it into commitConfig struct
@@ -39,12 +39,12 @@ func ReadCommitConfig(configFilePath string) commitConfig {
 		cfg.IssueRegex = helpers.DEFAULT_ISSUE_REGEX
 	}
 
-	if cfg.OutputIssuePrefix == "" {
-		cfg.OutputIssuePrefix = helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
+	if cfg.OutputIssuePrefix == nil {
+		*cfg.OutputIssuePrefix = helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
 	}
 
-	if cfg.OutputIssueSuffix == "" {
-		cfg.OutputIssueSuffix = helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
+	if cfg.OutputIssueSuffix == nil {
+		*cfg.OutputIssueSuffix = helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
 	}
 
 	return cfg

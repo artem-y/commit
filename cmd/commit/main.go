@@ -41,7 +41,13 @@ func main() {
 
 		if len(matches) > 0 {
 			joinedIssues := strings.Join(matches, ", ")
-			commitMessage = fmt.Sprintf("%s%s%s%s", cfg.OutputIssuePrefix, joinedIssues, cfg.OutputIssueSuffix, commitMessage)
+			commitMessage = fmt.Sprintf(
+				"%s%s%s%s",
+				*cfg.OutputIssuePrefix,
+				joinedIssues,
+				*cfg.OutputIssueSuffix,
+				commitMessage,
+			)
 		}
 
 		commitChanges(repo, commitMessage)
