@@ -18,36 +18,19 @@ import (
 
 func main() {
 	commitMessage := getCommitMessage()
-
-	issueRegex := helpers.DEFAULT_ISSUE_REGEX
-	outputIssuePrefix := helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
-	outputIssueSuffix := helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
-
-	commitCfg := config.ReadCommitConfig()
-	if commitCfg.IssueRegex != "" {
-		issueRegex = commitCfg.IssueRegex
-	}
-
-	if commitCfg.OutputIssuePrefix != "" {
-		outputIssuePrefix = commitCfg.OutputIssuePrefix
-	}
-
-	if commitCfg.OutputIssueSuffix != "" {
-		outputIssueSuffix = commitCfg.OutputIssueSuffix
-	}
-
 	repo := openRepo()
 	headRef := getCurrentHead(repo)
 
 	// Read branch name or HEAD
 	if headRef.Name().IsBranch() {
 
+		cfg := config.ReadCommitConfig()
 		branchName := headRef.Name().Short()
-		matches := findIssueMatchesInBranch(issueRegex, branchName)
+		matches := findIssueMatchesInBranch(cfg.IssueRegex, branchName)
 
 		if len(matches) > 0 {
 			joinedIssues := strings.Join(matches, ", ")
-			commitMessage = fmt.Sprintf("%s%s%s%s", outputIssuePrefix, joinedIssues, outputIssueSuffix, commitMessage)
+			commitMessage = fmt.Sprintf("%s%s%s%s", cfg.OutputIssuePrefix, joinedIssues, cfg.OutputIssueSuffix, commitMessage)
 		}
 
 		commitChanges(repo, commitMessage)

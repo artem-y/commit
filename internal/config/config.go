@@ -37,5 +37,17 @@ func ReadCommitConfig() commitConfig {
 		os.Exit(1)
 	}
 
+	if cfg.IssueRegex == "" {
+		cfg.IssueRegex = helpers.DEFAULT_ISSUE_REGEX
+	}
+
+	if cfg.OutputIssuePrefix == "" {
+		cfg.OutputIssuePrefix = helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
+	}
+
+	if cfg.OutputIssueSuffix == "" {
+		cfg.OutputIssueSuffix = helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
+	}
+
 	return cfg
 }
