@@ -47,7 +47,7 @@ func main() {
 // Reads commit message from command line arguments
 func getCommitMessage() string {
 	args := os.Args[1:]
-	if len(args) < 1 {
+	if len(args) < 1 || args[0] == "" {
 		fmt.Fprintln(os.Stderr, helpers.Red("Commit message cannot be empty"))
 		os.Exit(1)
 	}
