@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-    "github.com/artem-y/commit/internal/config"
-    "github.com/artem-y/commit/internal/helpers"
-    "github.com/artem-y/commit/internal/user"
+	"github.com/artem-y/commit/internal/config"
+	"github.com/artem-y/commit/internal/helpers"
+	"github.com/artem-y/commit/internal/user"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -20,10 +20,20 @@ func main() {
 	commitMessage := getCommitMessage()
 
 	issueRegex := helpers.DEFAULT_ISSUE_REGEX
+	outputIssuePrefix := helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
+	outputIssueSuffix := helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
 
 	commitCfg := config.ReadCommitConfig()
 	if commitCfg.IssueRegex != "" {
 		issueRegex = commitCfg.IssueRegex
+	}
+
+	if commitCfg.OutputIssuePrefix != "" {
+		outputIssuePrefix = commitCfg.OutputIssuePrefix
+	}
+
+	if commitCfg.OutputIssueSuffix != "" {
+		outputIssueSuffix = commitCfg.OutputIssueSuffix
 	}
 
 	repo := openRepo()
@@ -37,7 +47,7 @@ func main() {
 
 		if len(matches) > 0 {
 			joinedIssues := strings.Join(matches, ", ")
-			commitMessage = fmt.Sprintf("[%s]: %s", joinedIssues, commitMessage)
+			commitMessage = fmt.Sprintf("%s%s%s%s", outputIssuePrefix, joinedIssues, outputIssueSuffix, commitMessage)
 		}
 
 		commitChanges(repo, commitMessage)

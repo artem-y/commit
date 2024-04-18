@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"os"
 
-    "github.com/artem-y/commit/internal/helpers"
+	"github.com/artem-y/commit/internal/helpers"
 )
 
 type commitConfig struct {
-	IssueRegex string `json:"issueRegex"`
+	IssueRegex        string `json:"issueRegex"`
+	OutputIssuePrefix string `json:"outputIssuePrefix"`
+	OutputIssueSuffix string `json:"outputIssueSuffix"`
 }
 
 // Reads .commit.json file from current directory and unmarshals it into commitConfig struct
