@@ -115,6 +115,9 @@ func makeCommitOptions(usr user.User) git.CommitOptions {
 // Commits changes with provided message
 func commitChanges(repo *git.Repository, commitMessage string) {
 	worktree := openWorktree(repo)
+
+	checkStagedChanges(worktree)
+
 	usr := user.GetUser(*repo)
 	commitOptions := makeCommitOptions(usr)
 
@@ -123,4 +126,22 @@ func commitChanges(repo *git.Repository, commitMessage string) {
 		fmt.Fprintf(os.Stderr, helpers.Red("Failed to commit: %v\n"), err)
 		os.Exit(1)
 	}
+}
+
+// Checks if there are any staged changes to commit
+func checkStagedChanges(worktree *git.Worktree) {
+	fileStatuses, err := worktree.Status()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, helpers.Red("Failed to read the status of the worktree: %v\n"), err)
+		os.Exit(1)
+	}
+
+	for _, status := range fileStatuses {
+		if status.Staging != git.Unmodified {
+			return
+		}
+	}
+
+	fmt.Fprintln(os.Stderr, helpers.Red("No staged changes to commit"))
+	os.Exit(1)
 }
