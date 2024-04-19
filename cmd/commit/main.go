@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"regexp"
@@ -17,6 +18,16 @@ import (
 )
 
 func main() {
+	var configFilePath string
+
+	flag.StringVar(
+		&configFilePath,
+		"config-path",
+		helpers.DEFAULT_CONFIG_FILE_PATH,
+		"Path to the config json file",
+	)
+	flag.Parse()
+
 	commitMessage := getCommitMessage()
 	repo := openRepo()
 	headRef := getCurrentHead(repo)
@@ -24,13 +35,19 @@ func main() {
 	// Read branch name or HEAD
 	if headRef.Name().IsBranch() {
 
-		cfg := config.ReadCommitConfig()
+		cfg := config.ReadCommitConfig(configFilePath)
 		branchName := headRef.Name().Short()
 		matches := findIssueMatchesInBranch(cfg.IssueRegex, branchName)
 
 		if len(matches) > 0 {
 			joinedIssues := strings.Join(matches, ", ")
-			commitMessage = fmt.Sprintf("%s%s%s%s", cfg.OutputIssuePrefix, joinedIssues, cfg.OutputIssueSuffix, commitMessage)
+			commitMessage = fmt.Sprintf(
+				"%s%s%s%s",
+				*cfg.OutputIssuePrefix,
+				joinedIssues,
+				*cfg.OutputIssueSuffix,
+				commitMessage,
+			)
 		}
 
 		commitChanges(repo, commitMessage)
@@ -46,7 +63,8 @@ func main() {
 
 // Reads commit message from command line arguments
 func getCommitMessage() string {
-	args := os.Args[1:]
+	args := flag.Args()
+
 	if len(args) < 1 || args[0] == "" {
 		fmt.Fprintln(os.Stderr, helpers.Red("Commit message cannot be empty"))
 		os.Exit(1)

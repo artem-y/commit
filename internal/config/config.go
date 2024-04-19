@@ -9,15 +9,14 @@ import (
 )
 
 type commitConfig struct {
-	IssueRegex        string `json:"issueRegex"`
-	OutputIssuePrefix string `json:"outputIssuePrefix"`
-	OutputIssueSuffix string `json:"outputIssueSuffix"`
+	IssueRegex        string  `json:"issueRegex"`
+	OutputIssuePrefix *string `json:"outputIssuePrefix"`
+	OutputIssueSuffix *string `json:"outputIssueSuffix"`
 }
 
-// Reads .commit.json file from current directory and unmarshals it into commitConfig struct
-func ReadCommitConfig() commitConfig {
+// Reads config at the file path and unmarshals it into commitConfig struct
+func ReadCommitConfig(configFilePath string) commitConfig {
 
-	configFilePath := helpers.DEFAULT_CONFIG_FILE_PATH
 	var cfg commitConfig
 
 	_, err := os.Stat(configFilePath)
@@ -40,12 +39,14 @@ func ReadCommitConfig() commitConfig {
 		cfg.IssueRegex = helpers.DEFAULT_ISSUE_REGEX
 	}
 
-	if cfg.OutputIssuePrefix == "" {
-		cfg.OutputIssuePrefix = helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
+	if cfg.OutputIssuePrefix == nil {
+		defaultPrefix := helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
+		cfg.OutputIssuePrefix = &defaultPrefix
 	}
 
-	if cfg.OutputIssueSuffix == "" {
-		cfg.OutputIssueSuffix = helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
+	if cfg.OutputIssueSuffix == nil {
+		defaultSuffix := helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
+		cfg.OutputIssueSuffix = &defaultSuffix
 	}
 
 	return cfg
