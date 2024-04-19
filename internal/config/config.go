@@ -40,11 +40,13 @@ func ReadCommitConfig(configFilePath string) commitConfig {
 	}
 
 	if cfg.OutputIssuePrefix == nil {
-		*cfg.OutputIssuePrefix = helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
+		defaultPrefix := helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
+		cfg.OutputIssuePrefix = &defaultPrefix
 	}
 
 	if cfg.OutputIssueSuffix == nil {
-		*cfg.OutputIssueSuffix = helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
+		defaultSuffix := helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
+		cfg.OutputIssueSuffix = &defaultSuffix
 	}
 
 	return cfg
