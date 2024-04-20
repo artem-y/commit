@@ -1,7 +1,9 @@
 .PHONY: build
 build:
 	@go build -o bin/commit cmd/commit/main.go
-ifeq ($(filter all,$(MAKECMDGOALS)),all)
+
+.PHONY: all
+all:
 	@GOOS=darwin GOARCH=amd64 go build -o bin/macos-amd64/commit ./cmd/commit/
 	@GOOS=darwin GOARCH=arm64 go build -o bin/macos-arm64/commit ./cmd/commit/
 	@GOOS=linux GOARCH=386 go build -o bin/linux-386/commit ./cmd/commit/
@@ -12,7 +14,6 @@ ifeq ($(filter all,$(MAKECMDGOALS)),all)
 	@GOOS=windows GOARCH=amd64 go build -o bin/windows-amd64/commit ./cmd/commit/
 	@GOOS=windows GOARCH=arm go build -o bin/windows-arm/commit ./cmd/commit/
 	@GOOS=windows GOARCH=arm64 go build -o bin/windows-arm64/commit ./cmd/commit/
-endif
 
 .PHONY: clean
 clean:
