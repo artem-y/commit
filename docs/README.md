@@ -61,7 +61,7 @@ What each setting does:
 
 The structure of the resulting commit message is as follows:  
 ```
-<outputStringPrefix><outputIssuePrefix><issueRegex><outputIssueSuffix>, <outputIssuePrefix><issueRegex><outputIssueSuffix><outputIssueSuffix> <commit message>
+<outputStringPrefix><outputIssuePrefix><issueRegex><outputIssueSuffix>, <outputIssuePrefix><issueRegex><outputIssueSuffix><outputStringSuffix> <commit message>
 ```
 If the `.commit.json` file is not included, the tool will just fall back to its default settings (GitHub style issues).  
 Same will happen for any of the settings that is not included in the config json. See the default values in [constants.go](/internal/helpers/constants.go) file.
