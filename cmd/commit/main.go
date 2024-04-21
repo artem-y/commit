@@ -19,13 +19,21 @@ import (
 
 func main() {
 	var configFilePath string
-
 	flag.StringVar(
 		&configFilePath,
 		"config-path",
 		helpers.DEFAULT_CONFIG_FILE_PATH,
 		"Path to the config json file",
 	)
+
+	var dryRun bool
+	flag.BoolVar(
+		&dryRun,
+		"dry-run",
+		false,
+		"Prints the commit message without making the actual commit",
+	)
+
 	flag.Parse()
 
 	commitMessage := getCommitMessage()
@@ -43,7 +51,9 @@ func main() {
 			commitMessage = generateCommitMessageWithMatches(matches, cfg, commitMessage)
 		}
 
-		commitChanges(repo, commitMessage)
+		if !dryRun {
+			commitChanges(repo, commitMessage)
+		}
 
 		fmt.Println(commitMessage)
 
