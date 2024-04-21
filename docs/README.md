@@ -51,15 +51,16 @@ But this can be changed by setting different values in a `.commit.json` file at 
 }
 ```
 What each setting does:
-- **issueRegex**: this is how the tool determines what is the pattern to look for
-- **outputIssuePrefix**: precedes the generated part of the commit message
-- **outputIssueSuffix**: follows at the end of the generated part of the commit message
+- **issueRegex**: This is how the tool determines what is the pattern to look for.
+- **outputIssuePrefix**: Precedes the generated part of the commit message.
+- **outputIssueSuffix**: Follows at the end of the generated part of the commit message.
 
 The structure of the resulting commit message is as follows:  
 ```
 <outputIssuePrefix><issueRegex><outputIssueSuffix> <commit message>
 ```
-If the `.commit.json` file is not included, the tool will just fall back to its default settings (GitHub style issues). 
+If the `.commit.json` file is not included, the tool will just fall back to its default settings (GitHub style issues).  
+Same will happen for any of the settings that is not included in the config json. See the default values in [constants.go](/internal/helpers/constants.go) file.
 ### Custom Config Path
 If you don't want to include the `.commit.json` file at the root of your repository, path to the config file can be passed with a `-config-path` flag like this (linux/macOS shell example):
 ```shell
