@@ -47,17 +47,21 @@ But this can be changed by setting different values in a `.commit.json` file at 
 {  
     "issueRegex": "ABC-[0-9]+", 
     "outputIssuePrefix": "#",
-    "outputIssueSuffix": ": "
+    "outputIssueSuffix": "",
+    "outputStringPrefix": "",
+    "outputStringSuffix": ": ",
 }
 ```
 What each setting does:
 - **issueRegex**: This is how the tool determines what is the pattern to look for.
-- **outputIssuePrefix**: Precedes the generated part of the commit message.
-- **outputIssueSuffix**: Follows at the end of the generated part of the commit message.
+- **outputIssuePrefix**: Added before each issue.
+- **outputIssueSuffix**: Added after each issue.
+- **outputStringPrefix**: Precedes the generated part of the commit message.
+- **outputStringSuffix**: Follows at the end of the generated part of the commit message.
 
 The structure of the resulting commit message is as follows:  
 ```
-<outputIssuePrefix><issueRegex><outputIssueSuffix> <commit message>
+<outputStringPrefix><outputIssuePrefix><issueRegex><outputIssueSuffix>, <outputIssuePrefix><issueRegex><outputIssueSuffix><outputStringSuffix> <commit message>
 ```
 If the `.commit.json` file is not included, the tool will just fall back to its default settings (GitHub style issues).  
 Same will happen for any of the settings that is not included in the config json. See the default values in [constants.go](/internal/helpers/constants.go) file.
@@ -73,6 +77,11 @@ For example, the branch named `add-tests-for-CR-127-and-CR-131-features`, the is
 ## Testing
 So far I haven't added a lot of unit tests for this project, but I will be doing it in the future.  
 To run the tests, use the `make test` or `go test -v ./tests` commands.
+### Debug
+To check what commit message will be generated without making the actual commit, there is a `-dry-run` flag that can be passed to the command:
+```shell
+commit -dry-run "Not a real commit"
+```
 ## Contributing
 Originally I wrote this tool for myself in shell and Swift and used a lot on MacOS. This repo is an attempt to make it crossplatform and an opportunity to excercise in writing Go.  
 If you find it useful and see that something's wrong or missing, feel free to raise issues and contribute to the project.  

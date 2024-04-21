@@ -19,13 +19,21 @@ import (
 
 func main() {
 	var configFilePath string
-
 	flag.StringVar(
 		&configFilePath,
 		"config-path",
 		helpers.DEFAULT_CONFIG_FILE_PATH,
 		"Path to the config json file",
 	)
+
+	var dryRun bool
+	flag.BoolVar(
+		&dryRun,
+		"dry-run",
+		false,
+		"Prints the commit message without making the actual commit",
+	)
+
 	flag.Parse()
 
 	commitMessage := getCommitMessage()
@@ -40,17 +48,12 @@ func main() {
 		matches := findIssueMatchesInBranch(cfg.IssueRegex, branchName)
 
 		if len(matches) > 0 {
-			joinedIssues := strings.Join(matches, ", ")
-			commitMessage = fmt.Sprintf(
-				"%s%s%s%s",
-				*cfg.OutputIssuePrefix,
-				joinedIssues,
-				*cfg.OutputIssueSuffix,
-				commitMessage,
-			)
+			commitMessage = generateCommitMessageWithMatches(matches, cfg, commitMessage)
 		}
 
-		commitChanges(repo, commitMessage)
+		if !dryRun {
+			commitChanges(repo, commitMessage)
+		}
 
 		fmt.Println(commitMessage)
 
@@ -117,6 +120,30 @@ func findIssueMatchesInBranch(rgxRaw string, branchName string) []string {
 	return matches
 }
 
+// Generates a commit message with the issue number matches and config settings
+func generateCommitMessageWithMatches(matches []string, cfg config.CommitConfig, commitMessage string) string {
+	mappedMatches := make([]string, len(matches))
+
+	for index, match := range matches {
+		wrappedIssueNumber := fmt.Sprintf(
+			"%s%s%s",
+			*cfg.OutputIssuePrefix,
+			match,
+			*cfg.OutputIssueSuffix,
+		)
+		mappedMatches[index] = wrappedIssueNumber
+	}
+
+	joinedIssues := strings.Join(mappedMatches, ", ")
+	return fmt.Sprintf(
+		"%s%s%s%s",
+		*cfg.OutputStringPrefix,
+		joinedIssues,
+		*cfg.OutputStringSuffix,
+		commitMessage,
+	)
+}
+
 // Creates commit options with the author information
 func makeCommitOptions(usr user.User) git.CommitOptions {
 	return git.CommitOptions{
@@ -155,7 +182,7 @@ func checkStagedChanges(worktree *git.Worktree) {
 	}
 
 	for _, status := range fileStatuses {
-		if status.Staging != git.Unmodified {
+		if status.Staging != git.Unmodified && status.Staging != git.Untracked {
 			return
 		}
 	}
