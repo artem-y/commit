@@ -8,16 +8,18 @@ import (
 	"github.com/artem-y/commit/internal/helpers"
 )
 
-type commitConfig struct {
-	IssueRegex        string  `json:"issueRegex"`
-	OutputIssuePrefix *string `json:"outputIssuePrefix"`
-	OutputIssueSuffix *string `json:"outputIssueSuffix"`
+type CommitConfig struct {
+	IssueRegex         string  `json:"issueRegex"`
+	OutputIssuePrefix  *string `json:"outputIssuePrefix"`
+	OutputIssueSuffix  *string `json:"outputIssueSuffix"`
+	OutputStringPrefix *string `json:"outputStringPrefix"`
+	OutputStringSuffix *string `json:"outputStringSuffix"`
 }
 
 // Reads config at the file path and unmarshals it into commitConfig struct
-func ReadCommitConfig(configFilePath string) commitConfig {
+func ReadCommitConfig(configFilePath string) CommitConfig {
 
-	var cfg commitConfig
+	var cfg CommitConfig
 
 	_, err := os.Stat(configFilePath)
 	if err == nil {
@@ -40,13 +42,23 @@ func ReadCommitConfig(configFilePath string) commitConfig {
 	}
 
 	if cfg.OutputIssuePrefix == nil {
-		defaultPrefix := helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
-		cfg.OutputIssuePrefix = &defaultPrefix
+		defaultIssuePrefix := helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
+		cfg.OutputIssuePrefix = &defaultIssuePrefix
 	}
 
 	if cfg.OutputIssueSuffix == nil {
-		defaultSuffix := helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
-		cfg.OutputIssueSuffix = &defaultSuffix
+		defaultIssueSuffix := helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
+		cfg.OutputIssueSuffix = &defaultIssueSuffix
+	}
+
+	if cfg.OutputStringPrefix == nil {
+		defaultStringPrefix := helpers.DEFAULT_OUTPUT_STRING_PREFIX
+		cfg.OutputStringPrefix = &defaultStringPrefix
+	}
+
+	if cfg.OutputStringSuffix == nil {
+		defaultStringSuffix := helpers.DEFAULT_OUTPUT_STRING_SUFFIX
+		cfg.OutputStringSuffix = &defaultStringSuffix
 	}
 
 	return cfg

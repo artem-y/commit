@@ -1,5 +1,7 @@
 {
     "issueRegex": "[0-9]+",
     "outputIssuePrefix": "#",
-    "outputIssueSuffix": ": "
+    "outputIssueSuffix": "",
+    "outputStringPrefix": "[",
+    "outputStringSuffix": "]: "
 }
