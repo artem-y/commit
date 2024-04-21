@@ -1,6 +1,37 @@
 # commit
 Simple CLI tool that finds an issue number in the branch and includes it in the commit message
 
+## Installation
+### Using Pre-built Executable
+1. In the [Releases](https://github.com/artem-y/commit/releases) section, find and open the latest release (or any other one if you want).
+2. Download `bin.zip` archive
+3. Unarchive it and find a folder for your machine's architecture.
+4. Make sure your system allows execution of the tool. For example, on Linux/macOS, use `chmod +x <path-to-commit-executable>` command to enable the "execute" permission. Adjust other settings if needed.
+5. Move the executable into one of the directories visible in `PATH` so that the command is visible and reachable from anywhere.
+6. If you want to use a custom path to a global `.commit.json` file for all the repositories, you can specify it with a typealias in your `.bashrc` or `.zshrc` file etc.  
+   For example:  
+   ```shell
+   alias commit="commit -config-path=${HOME}/.config/.commit.json"
+   ```
+### Using Makefile
+1. Make sure you have a compatible version of `Go` installed _(see [go.mod](https://github.com/artem-y/commit/blob/main/go.mod#L3) file)_
+2. Clone the repository
+3. In the root of the repository, run `make build` command
+4. Find the executable in `bin` directory, move it into one of the directories visible in `PATH` so that it is visible and reachable from anywhere.
+5. If you want to use a custom path to a global `.commit.json` file for all the repositories, you can specify it with a typealias in your `.bashrc` or `.zshrc` file etc.  
+   For example:  
+   ```shell
+   alias commit="commit -config-path=${HOME}/.config/.commit.json"
+   ```  
+
+Check out the [Makefile](/Makefile) for more commands.
+### Using Go Tooling
+You can do the steps described above in the [Using Makefile](#using-makefile) section, replacing Step 3 (`make build` command) with just a plain Go build command:  
+```shell
+go build -o bin/ ./cmd/commit
+```
+
+For more information, see [Tutorial: Compile and install the application](https://go.dev/doc/tutorial/compile-install) 
 ## Usage
 To commit all staged changes, use `commit` command with some commit message:
 ```shell
