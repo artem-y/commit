@@ -29,6 +29,13 @@ windows:
 	@GOOS=windows GOARCH=arm go build -ldflags "-s -w" -o bin/windows-arm/ ./cmd/commit/
 	@GOOS=windows GOARCH=arm64 go build -ldflags "-s -w" -o bin/windows-arm64/ ./cmd/commit/
 
+# Build and prepare a release archive for all platforms
+.PHONY: release
+release:
+	@make clean
+	@make all
+	@zip -r bin/bin.zip bin/
+
 # Clean the build artifacts
 .PHONY: clean
 clean:

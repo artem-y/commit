@@ -182,7 +182,7 @@ func checkStagedChanges(worktree *git.Worktree) {
 	}
 
 	for _, status := range fileStatuses {
-		if status.Staging != git.Unmodified {
+		if status.Staging != git.Unmodified && status.Staging != git.Untracked {
 			return
 		}
 	}
