@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -22,7 +23,7 @@ func main() {
 	flag.StringVar(
 		&configFilePath,
 		"config-path",
-		helpers.DEFAULT_CONFIG_FILE_PATH,
+		"",
 		"Path to the config json file",
 	)
 
@@ -38,6 +39,15 @@ func main() {
 
 	commitMessage := getCommitMessage()
 	repo := openRepo()
+	worktree := openWorktree(repo)
+
+	if configFilePath == "" {
+		configFilePath = filepath.Join(
+			worktree.Filesystem.Root(),
+			helpers.DEFAULT_CONFIG_FILE_PATH,
+		)
+	}
+
 	headRef := getCurrentHead(repo)
 
 	// Read branch name or HEAD
@@ -52,7 +62,7 @@ func main() {
 		}
 
 		if !dryRun {
-			commitChanges(repo, commitMessage)
+			commitChanges(repo, worktree, commitMessage)
 		}
 
 		fmt.Println(commitMessage)
@@ -76,9 +86,12 @@ func getCommitMessage() string {
 	return args[0]
 }
 
-// Opens the repository in current directory
+// Opens the current repository
 func openRepo() *git.Repository {
-	repo, err := git.PlainOpen(".")
+
+	options := git.PlainOpenOptions{DetectDotGit: true}
+
+	repo, err := git.PlainOpenWithOptions(".", &options)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, helpers.Red("Failed to open repository: %v\n"), err)
 		os.Exit(1)
@@ -158,8 +171,7 @@ func makeCommitOptions(usr user.User) git.CommitOptions {
 }
 
 // Commits changes with provided message
-func commitChanges(repo *git.Repository, commitMessage string) {
-	worktree := openWorktree(repo)
+func commitChanges(repo *git.Repository, worktree *git.Worktree, commitMessage string) {
 
 	checkStagedChanges(worktree)
 
