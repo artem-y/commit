@@ -41,7 +41,12 @@ func main() {
 	repo := openRepo()
 	worktree := openWorktree(repo)
 
-	configFilePath = filepath.Join(worktree.Filesystem.Root(), helpers.DEFAULT_CONFIG_FILE_PATH)
+	if configFilePath == "" {
+		configFilePath = filepath.Join(
+			worktree.Filesystem.Root(),
+			helpers.DEFAULT_CONFIG_FILE_PATH,
+		)
+	}
 
 	headRef := getCurrentHead(repo)
 
