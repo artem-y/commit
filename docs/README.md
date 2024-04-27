@@ -87,5 +87,5 @@ Originally I wrote this tool for myself in shell and Swift and used a lot on Mac
 If you find it useful and see that something's wrong or missing, feel free to raise issues and contribute to the project.  
 When doing so, please follow the ususal code of conduct and contribution guidelines from GitHub, and just common sense.
 ## License
-This repository is distributed under the MIT license (see [LICENSE.md](/docs/LICENSE.md).  
+This repository is distributed under the MIT license (see [LICENSE.md](/docs/LICENSE)).  
 My tool uses [go-git](https://github.com/go-git/go-git) as a 3rd party dependency to work with git directly, you might want to check it out too.
