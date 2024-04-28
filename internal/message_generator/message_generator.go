@@ -50,9 +50,9 @@ func generateCommitMessageWithMatches(matches []string, cfg config.CommitConfig,
 	for index, match := range matches {
 		wrappedIssueNumber := fmt.Sprintf(
 			"%s%s%s",
-			*cfg.OutputIssuePrefix,
+			cfg.OutputIssuePrefix,
 			match,
-			*cfg.OutputIssueSuffix,
+			cfg.OutputIssueSuffix,
 		)
 		mappedMatches[index] = wrappedIssueNumber
 	}
@@ -60,9 +60,9 @@ func generateCommitMessageWithMatches(matches []string, cfg config.CommitConfig,
 	joinedIssues := strings.Join(mappedMatches, ", ")
 	return fmt.Sprintf(
 		"%s%s%s%s",
-		*cfg.OutputStringPrefix,
+		cfg.OutputStringPrefix,
 		joinedIssues,
-		*cfg.OutputStringSuffix,
+		cfg.OutputStringSuffix,
 		commitMessage,
 	)
 }

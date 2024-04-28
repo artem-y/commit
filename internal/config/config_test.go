@@ -18,7 +18,7 @@ func Test_ReadCommitConfig_WhenFileDoesNotExist_ReturnsDefaultConfig(t *testing.
 	mock.Results.Stat.Error = err
 	mock.Results.ReadFile.Error = err
 
-	defaultConfig := makeDefaultConfig()
+	defaultConfig := config.MakeDefaultConfig()
 
 	// Act
 	cfg, err := config.ReadCommitConfig(mock, "some/path")
@@ -35,27 +35,22 @@ func Test_ReadCommitConfig_WhenFileDoesNotExist_ReturnsDefaultConfig(t *testing.
 	}
 
 	if !reflect.DeepEqual(cfg, defaultConfig) {
-		t.Errorf("Expected default config, got %s", describe(cfg))
+		t.Errorf("Expected default config, got %s", makeJSON(cfg))
 	}
 }
 
 func Test_ReadCommitConfig_WhenFilledWithValidSettings_LoadsAllValuesFromConfig(t *testing.T) {
 	// Arrange
 	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
-	issueRegex := "XY[0-9]+"
-	outputIssuePrefix := "("
-	outputIssueSuffix := ")"
-	outputStringPrefix := "[ "
-	outputStringSuffix := " ]"
 
 	expectedConfig := config.CommitConfig{
-		IssueRegex:         issueRegex,
-		OutputIssuePrefix:  &outputIssuePrefix,
-		OutputIssueSuffix:  &outputIssueSuffix,
-		OutputStringPrefix: &outputStringPrefix,
-		OutputStringSuffix: &outputStringSuffix,
+		IssueRegex:         "XY[0-9]+",
+		OutputIssuePrefix:  "(",
+		OutputIssueSuffix:  ")",
+		OutputStringPrefix: "[ ",
+		OutputStringSuffix: " ]",
 	}
-	configJson := makeJSONFromConfig(expectedConfig)
+	configJson := makeJSON(expectedConfig)
 
 	mock.Results.ReadFile.Success = []byte(configJson)
 
@@ -70,8 +65,8 @@ func Test_ReadCommitConfig_WhenFilledWithValidSettings_LoadsAllValuesFromConfig(
 	if !reflect.DeepEqual(cfg, expectedConfig) {
 		t.Errorf(
 			"Expected `%s`, got `%s`",
-			describe(expectedConfig),
-			describe(cfg),
+			makeJSON(expectedConfig),
+			makeJSON(cfg),
 		)
 	}
 }
@@ -115,7 +110,7 @@ func Test_ReadCommitConfig_WhenOnlyRegexInConfix_ReturnsConfigWithRegex(t *testi
 	configJson := fmt.Sprintf("{\"issueRegex\":\"%s\"}", expectedRegex)
 	mock.Results.ReadFile.Success = []byte(configJson)
 
-	expectedConfig := makeDefaultConfig()
+	expectedConfig := config.MakeDefaultConfig()
 	expectedConfig.IssueRegex = expectedRegex
 
 	// Act
@@ -137,48 +132,37 @@ func Test_ReadCommitConfig_WhenOnlyRegexInConfix_ReturnsConfigWithRegex(t *testi
 	if !reflect.DeepEqual(cfg, expectedConfig) {
 		t.Errorf(
 			"Expected config:\n'%s'\nActual config:\n'%s'",
-			describe(expectedConfig),
-			describe(cfg),
+			makeJSON(expectedConfig),
+			makeJSON(cfg),
 		)
 	}
 }
 
-// Helper function to create a default config
-func makeDefaultConfig() config.CommitConfig {
-	outputIssuePrefix := helpers.DEFAULT_OUTPUT_ISSUE_PREFIX
-	outputIssueSuffix := helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX
-	outputStringPrefix := helpers.DEFAULT_OUTPUT_STRING_PREFIX
-	outputStringSuffix := helpers.DEFAULT_OUTPUT_STRING_SUFFIX
-
-	return config.CommitConfig{
+func Test_MakeDefaultConfig_CreatesConfigWithDefaultValues(t *testing.T) {
+	// Arrange
+	expectedConfig := config.CommitConfig{
 		IssueRegex:         helpers.DEFAULT_ISSUE_REGEX,
-		OutputIssuePrefix:  &outputIssuePrefix,
-		OutputIssueSuffix:  &outputIssueSuffix,
-		OutputStringPrefix: &outputStringPrefix,
-		OutputStringSuffix: &outputStringSuffix,
+		OutputIssuePrefix:  helpers.DEFAULT_OUTPUT_ISSUE_PREFIX,
+		OutputIssueSuffix:  helpers.DEFAULT_OUTPUT_ISSUE_SUFFIX,
+		OutputStringPrefix: helpers.DEFAULT_OUTPUT_STRING_PREFIX,
+		OutputStringSuffix: helpers.DEFAULT_OUTPUT_STRING_SUFFIX,
+	}
+
+	// Act
+	cfg := config.MakeDefaultConfig()
+
+	// Assert
+	if !reflect.DeepEqual(cfg, expectedConfig) {
+		t.Errorf(
+			"Expected default config ('%s'), got '%s'",
+			makeJSON(expectedConfig),
+			makeJSON(cfg),
+		)
 	}
 }
 
-// Helper function to make a human-readable description for a config
-func describe(cfg config.CommitConfig) string {
-	return fmt.Sprintf(
-		`{
-			IssueRegex: '%s', 
-			OutputIssuePrefix: '%s', 
-			OutputIssueSuffix: '%s', 
-			OutputStringPrefix: '%s', 
-			OutputStringSuffix: '%s'
-		}`,
-		cfg.IssueRegex,
-		*cfg.OutputIssuePrefix,
-		*cfg.OutputIssueSuffix,
-		*cfg.OutputStringPrefix,
-		*cfg.OutputStringSuffix,
-	)
-}
-
 // Helper function to create a JSON string from a config
-func makeJSONFromConfig(cfg config.CommitConfig) string {
+func makeJSON(cfg config.CommitConfig) string {
 	return fmt.Sprintf(
 		`{
 			"issueRegex": "%s",
@@ -188,9 +172,9 @@ func makeJSONFromConfig(cfg config.CommitConfig) string {
 			"outputStringSuffix": "%s"
 		}`,
 		cfg.IssueRegex,
-		*cfg.OutputIssuePrefix,
-		*cfg.OutputIssueSuffix,
-		*cfg.OutputStringPrefix,
-		*cfg.OutputStringSuffix,
+		cfg.OutputIssuePrefix,
+		cfg.OutputIssueSuffix,
+		cfg.OutputStringPrefix,
+		cfg.OutputStringSuffix,
 	)
 }

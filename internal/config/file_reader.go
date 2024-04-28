@@ -10,6 +10,7 @@ type FileReading interface {
 	Stat(filename string) (fs.FileInfo, error)
 }
 
+// Simple facade around the os file reading functions
 type FileReader struct{}
 
 func (FileReader) ReadFile(filename string) ([]byte, error) {
