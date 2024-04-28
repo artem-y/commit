@@ -53,7 +53,12 @@ func main() {
 	// Read branch name or HEAD
 	if headRef.Name().IsBranch() {
 
-		cfg := config.ReadCommitConfig(configFilePath)
+		fileReader := config.FileReader{}
+		cfg, err := config.ReadCommitConfig(fileReader, configFilePath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, helpers.Red("Failed to read config: %v\n"), err)
+			os.Exit(1)
+		}
 		branchName := headRef.Name().Short()
 		matches := findIssueMatchesInBranch(cfg.IssueRegex, branchName)
 

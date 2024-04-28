@@ -2,8 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
-	"os"
 
 	"github.com/artem-y/commit/internal/helpers"
 )
@@ -17,23 +15,20 @@ type CommitConfig struct {
 }
 
 // Reads config at the file path and unmarshals it into commitConfig struct
-func ReadCommitConfig(configFilePath string) CommitConfig {
-
+func ReadCommitConfig(fileReader FileReading, configFilePath string) (CommitConfig, error) {
 	var cfg CommitConfig
 
-	_, err := os.Stat(configFilePath)
+	_, err := fileReader.Stat(configFilePath)
 	if err == nil {
 
-		file, err := os.ReadFile(configFilePath)
+		file, err := fileReader.ReadFile(configFilePath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, helpers.Red("Error reading %s file: %v\n"), err, configFilePath)
-			os.Exit(1)
+			return cfg, err
 		}
 
 		err = json.Unmarshal(file, &cfg)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, helpers.Red("Error unmarshalling %s file: %v\n"), err, configFilePath)
-			os.Exit(1)
+			return cfg, err
 		}
 	}
 
@@ -61,5 +56,5 @@ func ReadCommitConfig(configFilePath string) CommitConfig {
 		cfg.OutputStringSuffix = &defaultStringSuffix
 	}
 
-	return cfg
+	return cfg, nil
 }
