@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/artem-y/commit/internal/config"
 	"github.com/artem-y/commit/internal/helpers"
+	"github.com/artem-y/commit/internal/message_generator"
 	"github.com/artem-y/commit/internal/user"
 
 	"github.com/go-git/go-git/v5"
@@ -53,13 +52,19 @@ func main() {
 	// Read branch name or HEAD
 	if headRef.Name().IsBranch() {
 
-		cfg := config.ReadCommitConfig(configFilePath)
-		branchName := headRef.Name().Short()
-		matches := findIssueMatchesInBranch(cfg.IssueRegex, branchName)
-
-		if len(matches) > 0 {
-			commitMessage = generateCommitMessageWithMatches(matches, cfg, commitMessage)
+		fileReader := config.FileReader{}
+		cfg, err := config.ReadCommitConfig(fileReader, configFilePath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, helpers.Red("Failed to read config: %v\n"), err)
+			os.Exit(1)
 		}
+
+		messageGenerator := message_generator.MessageGenerator{
+			BranchName:  headRef.Name().Short(),
+			UserMessage: commitMessage,
+			Config:      cfg,
+		}
+		commitMessage = messageGenerator.GenerateMessage()
 
 		if !dryRun {
 			commitChanges(repo, worktree, commitMessage)
@@ -117,44 +122,6 @@ func openWorktree(repo *git.Repository) *git.Worktree {
 		os.Exit(1)
 	}
 	return worktree
-}
-
-// Searches the branch name for issue numbers matching the given regex
-func findIssueMatchesInBranch(rgxRaw string, branchName string) []string {
-	rgx := regexp.MustCompile(rgxRaw)
-
-	allSubmatches := rgx.FindAllStringSubmatch(branchName, -1)
-
-	matches := []string{}
-	for _, submatches := range allSubmatches {
-		matches = append(matches, submatches[0])
-	}
-
-	return matches
-}
-
-// Generates a commit message with the issue number matches and config settings
-func generateCommitMessageWithMatches(matches []string, cfg config.CommitConfig, commitMessage string) string {
-	mappedMatches := make([]string, len(matches))
-
-	for index, match := range matches {
-		wrappedIssueNumber := fmt.Sprintf(
-			"%s%s%s",
-			*cfg.OutputIssuePrefix,
-			match,
-			*cfg.OutputIssueSuffix,
-		)
-		mappedMatches[index] = wrappedIssueNumber
-	}
-
-	joinedIssues := strings.Join(mappedMatches, ", ")
-	return fmt.Sprintf(
-		"%s%s%s%s",
-		*cfg.OutputStringPrefix,
-		joinedIssues,
-		*cfg.OutputStringSuffix,
-		commitMessage,
-	)
 }
 
 // Creates commit options with the author information
