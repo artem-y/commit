@@ -75,8 +75,8 @@ If the branch has multiple issues in its name, the tool will include them all, c
 For example, the branch named `add-tests-for-CR-127-and-CR-131-features`, the issue regex set to `[A-Z]{2}-[0-9]+`, and the "outputIssuePrefix" and "outputIssueSuffix" settings for the output set to `[` and `]:`, the generated commit message would start with the following:  
 > [CR-127, CR-131]:
 ## Testing
-So far I haven't added a lot of unit tests for this project, but I will be doing it in the future.  
-To run the tests, use the `make test` or `go test -v ./tests` commands.
+So far only the core parts of the logic are covered with tests, but I will be adding more in the future.  
+To run the tests, use the `make test` or `go test -v ./...` commands.
 ### Debug
 To check what commit message will be generated without making the actual commit, there is a `-dry-run` flag that can be passed to the command:
 ```shell
@@ -87,5 +87,5 @@ Originally I wrote this tool for myself in shell and Swift and used a lot on Mac
 If you find it useful and see that something's wrong or missing, feel free to raise issues and contribute to the project.  
 When doing so, please follow the ususal code of conduct and contribution guidelines from GitHub, and just common sense.
 ## License
-This repository is distributed under the MIT license (see [LICENSE.md](/docs/LICENSE)).  
+This repository is distributed under the MIT license (see [LICENSE](/LICENSE)).  
 My tool uses [go-git](https://github.com/go-git/go-git) as a 3rd party dependency to work with git directly, you might want to check it out too.
