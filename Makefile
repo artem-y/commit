@@ -1,7 +1,20 @@
-# Build the current machine
+# Build for the current machine
 .PHONY: build
 build:
 	@go build -o bin/ ./cmd/commit/
+
+# Build and install
+.PHONY: install
+install:
+	@INSTALLATION_PATH=$$(which commit) ; \
+	if [ -z "$${INSTALLATION_PATH}" ]; then \
+		go install -ldflags "-s -w" ./cmd/commit/ ; \
+	else \
+		go build -ldflags "-s -w" -o bin/ ./cmd/commit ; \
+		INSTALLATION_DIR=$$(dirname "$${INSTALLATION_PATH}") ; \
+		mv bin/commit $${INSTALLATION_DIR} ; \
+	fi && \
+	echo "Installed at $${INSTALLATION_PATH}"
 
 # Build for all platforms
 .PHONY: all
