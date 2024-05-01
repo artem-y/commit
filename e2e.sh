@@ -2,7 +2,7 @@
 
 # MARK: - Setup
 
-function build_if_needed() {
+build_if_needed() {
     # Check if there already is a pre-built executable
     if [ ! -f ./bin/commit ]; then
         # Build the executable, exit if build fails
@@ -10,19 +10,19 @@ function build_if_needed() {
     fi
 }
 
-function red() {
+red() {
     echo "\033[0;31m$1\033[0m"
 }
 
-function green() {
+green() {
     echo "\033[0;32m$1\033[0m"
 }
 
-function yellow() {
+yellow() {
     echo "\033[0;33m$1\033[0m"
 }
 
-function setup_test_repository() { 
+setup_test_repository() { 
     # Create a new directory
     mkdir testdir && \
     cd testdir && \
@@ -32,19 +32,19 @@ function setup_test_repository() {
     touch file && git add file && git commit -m "Initial commit"
 }
 
-function start_test() {
+start_test() {
     echo ""
     echo $(yellow "TEST: $1")
 }
 
-function fail_test() {
+fail_test() {
     echo $(red "FAIL: $1")
         cd ..
         rm -rf testdir
         exit 1
 }
 
-function pass_test() {
+pass_test() {
     echo $(green "PASS: $1")
         cd ..
         rm -rf testdir
@@ -52,7 +52,7 @@ function pass_test() {
 
 # MARK: - Test Cases
 
-function test_commit_from_current_directory_without_config() {
+test_commit_from_current_directory_without_config() {
     start_test $FUNCNAME
 
     setup_test_repository &&\
@@ -79,7 +79,7 @@ function test_commit_from_current_directory_without_config() {
     pass_test $FUNCNAME
 }
 
-function test_use_config_from_current_directory() {
+test_use_config_from_current_directory() {
     start_test $FUNCNAME
 
     setup_test_repository &&\
@@ -117,7 +117,7 @@ function test_use_config_from_current_directory() {
     pass_test $FUNCNAME
 }
 
-function test_commit_from_subdirectory() {
+test_commit_from_subdirectory() {
     start_test $FUNCNAME
 
     setup_test_repository &&\
@@ -161,7 +161,7 @@ function test_commit_from_subdirectory() {
     pass_test $FUNCNAME
 }
 
-function test_set_correct_author() {
+test_set_correct_author() {
     start_test $FUNCNAME
 
     EXPECTED_AUTHOR_NAME="John Doe"
