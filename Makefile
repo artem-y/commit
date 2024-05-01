@@ -9,6 +9,7 @@ install:
 	@INSTALLATION_PATH=$$(which commit) ; \
 	if [ -z "$${INSTALLATION_PATH}" ]; then \
 		go install -ldflags "-s -w" ./cmd/commit/ ; \
+		INSTALLATION_PATH=$$(which commit) ; \
 	else \
 		go build -ldflags "-s -w" -o bin/ ./cmd/commit ; \
 		INSTALLATION_DIR=$$(dirname "$${INSTALLATION_PATH}") ; \
