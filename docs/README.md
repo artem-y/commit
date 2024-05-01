@@ -27,17 +27,17 @@ Simple CLI tool that finds an issue number in the branch and includes it in the 
 Check out the [Makefile](/Makefile) for more commands.
 
 ### Easy Installation With Makefile
-There's a helper command in that can simplify installation:
+There's a helper command that can simplify installation:
 ```shell
 make install
 ```
 1. Make sure you have a compatible version of `Go` installed _(see [go.mod](https://github.com/artem-y/commit/blob/main/go.mod#L3) file)_
 2. Clone the repository
 3. In the root of the repository, run `make install`
-4. (Optional) It will try to install to where it was installed previously. In case this is the first installation, it will be installed in the default Go package directory. If the tool is not visible after instllation, make sure it's directory is included in `PATH`.
+4. _(Optional)_ It will try to install to where the tool was installed previously. In case this is the first installation, it will be installed in the default Go package directory. If the tool is not visible after instllation, make sure its directory is included in `PATH`.
 
 ### Install With Go Tooling
-You can do the steps described above in the [Using Makefile](#install-with-makefile) section, replacing Step 3 (`make build` command) with just a plain Go build command:  
+You can do the steps described above in the [Install With Makefile](#install-with-makefile) section, replacing Step 3 (`make build` command) with just a plain Go build command:  
 ```shell
 go build -o bin/ ./cmd/commit
 ```
@@ -45,7 +45,7 @@ Or you can skip even those steps and use `go install` command:
 ```shell
 go install -ldflags "-s -w" ./cmd/commit
 ```
-This will install the executable in the default Go package directory. If the tool is not visible after the installation, make sure it's directory is included in `PATH`.
+This will install the executable in the default Go package directory. If the tool is not visible after installation, make sure its directory is included in `PATH`.
 
 For more information, see [Tutorial: Compile and install the application](https://go.dev/doc/tutorial/compile-install) 
 ## Usage
