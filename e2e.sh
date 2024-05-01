@@ -22,6 +22,12 @@ yellow() {
     echo "\033[0;33m$1\033[0m"
 }
 
+setup_global_git_config() {
+    git config --global init.defaultBranch main
+    git config --global user.name "GitHub Actions CI Runner"
+    git config --global user.email "--"
+}
+
 setup_test_repository() { 
     # Create a new directory
     mkdir testdir && \
@@ -53,6 +59,7 @@ pass_test() {
 # MARK: - Test Cases
 
 test_commit_from_current_directory_without_config() {
+    FUNCNAME="test_commit_from_current_directory_without_config"
     start_test $FUNCNAME
 
     setup_test_repository &&\
@@ -80,6 +87,7 @@ test_commit_from_current_directory_without_config() {
 }
 
 test_use_config_from_current_directory() {
+    FUNCNAME="test_use_config_from_current_directory"
     start_test $FUNCNAME
 
     setup_test_repository &&\
@@ -118,6 +126,7 @@ test_use_config_from_current_directory() {
 }
 
 test_commit_from_subdirectory() {
+    FUNCNAME="test_commit_from_subdirectory"
     start_test $FUNCNAME
 
     setup_test_repository &&\
@@ -162,6 +171,7 @@ test_commit_from_subdirectory() {
 }
 
 test_set_correct_author() {
+    FUNCNAME="test_set_correct_author"
     start_test $FUNCNAME
 
     EXPECTED_AUTHOR_NAME="John Doe"
@@ -212,6 +222,7 @@ test_set_correct_author() {
 # MARK: - Run Tests
 
 build_if_needed
+setup_global_git_config
 
 test_commit_from_current_directory_without_config
 test_use_config_from_current_directory
