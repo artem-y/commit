@@ -22,4 +22,5 @@ jobs:
       run: make test
     
     - name: Run End-to-End Tests
-      run: /usr/bin/sh e2e.sh
+      shell: sh
+      run: sh e2e.sh
