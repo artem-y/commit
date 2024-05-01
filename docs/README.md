@@ -2,7 +2,7 @@
 Simple CLI tool that finds an issue number in the branch and includes it in the commit message.
 
 ## Installation
-### Using Pre-built Executable
+### Install Pre-built Executable
 1. In the [Releases](https://github.com/artem-y/commit/releases) section, find and open the latest release (or any other one if you want).
 2. Download `bin.zip` archive
 3. Unarchive it and find a folder for your machine's architecture.
@@ -13,7 +13,7 @@ Simple CLI tool that finds an issue number in the branch and includes it in the 
    ```shell
    alias commit="commit -config-path=${HOME}/.config/.commit.json"
    ```
-### Using Makefile
+### Install With Makefile
 1. Make sure you have a compatible version of `Go` installed _(see [go.mod](https://github.com/artem-y/commit/blob/main/go.mod#L3) file)_
 2. Clone the repository
 3. In the root of the repository, run `make build` command
@@ -25,11 +25,27 @@ Simple CLI tool that finds an issue number in the branch and includes it in the 
    ```  
 
 Check out the [Makefile](/Makefile) for more commands.
-### Using Go Tooling
-You can do the steps described above in the [Using Makefile](#using-makefile) section, replacing Step 3 (`make build` command) with just a plain Go build command:  
+
+### Easy Installation With Makefile
+There's a helper command that can simplify installation:
+```shell
+make install
+```
+1. Make sure you have a compatible version of `Go` installed _(see [go.mod](https://github.com/artem-y/commit/blob/main/go.mod#L3) file)_
+2. Clone the repository
+3. In the root of the repository, run `make install`
+4. _(Optional)_ It will try to install to where the tool was installed previously. In case this is the first installation, it will be installed in the default Go package directory. If the tool is not visible after instllation, make sure its directory is included in `PATH`.
+
+### Install With Go Tooling
+You can do the steps described above in the [Install With Makefile](#install-with-makefile) section, replacing Step 3 (`make build` command) with just a plain Go build command:  
 ```shell
 go build -o bin/ ./cmd/commit
 ```
+Or you can skip even those steps and use `go install` command:
+```shell
+go install -ldflags "-s -w" ./cmd/commit
+```
+This will install the executable in the default Go package directory. If the tool is not visible after installation, make sure its directory is included in `PATH`.
 
 For more information, see [Tutorial: Compile and install the application](https://go.dev/doc/tutorial/compile-install) 
 ## Usage
@@ -76,7 +92,8 @@ For example, the branch named `add-tests-for-CR-127-and-CR-131-features`, the is
 > [CR-127, CR-131]:
 ## Testing
 So far only the core parts of the logic are covered with tests, but I will be adding more in the future.  
-To run the tests, use the `make test` or `go test -v ./...` commands.
+To run the unit tests, use the `make test` or `go test -v ./...` commands.  
+There also are a few end-to-end tests that will run in the CI pipeline to make sure the tool actually works as expected with a real repository. I do not advise running those often manually, since they can potentially execute destructive commands.
 ### Debug
 To check what commit message will be generated without making the actual commit, there is a `-dry-run` flag that can be passed to the command:
 ```shell
