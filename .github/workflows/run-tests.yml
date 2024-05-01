@@ -18,5 +18,8 @@ jobs:
       with:
         go-version: '1.22'
 
-    - name: Test
+    - name: Run Unit Tests
       run: make test
+    
+    - name: Run End-to-End Tests
+      run: sh e2e.sh
