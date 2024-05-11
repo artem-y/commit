@@ -2,6 +2,8 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
+	"regexp"
 
 	"github.com/artem-y/commit/internal/helpers"
 )
@@ -44,6 +46,10 @@ func ReadCommitConfig(fileReader FileReading, configFilePath string) (CommitConf
 
 	cfg := makeConfig(cfgDto)
 
+	if err := validateRegex(cfg.IssueRegex); err != nil {
+		return CommitConfig{}, err
+	}
+
 	return cfg, nil
 }
 
@@ -84,4 +90,14 @@ func makeConfig(cfgDto commitConfigDTO) CommitConfig {
 	}
 
 	return cfg
+}
+
+// Validate the issue regex
+func validateRegex(rawString string) error {
+	if rawString == "" {
+		return errors.New("Issue regex can't be empty. Please update the config file.")
+	}
+
+	_, err := regexp.Compile(rawString)
+	return err
 }

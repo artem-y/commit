@@ -59,8 +59,8 @@ pass_test() {
 # MARK: - Test Cases
 
 test_commit_from_current_directory_without_config() {
-    FUNCNAME="test_commit_from_current_directory_without_config"
-    start_test $FUNCNAME
+    TESTNAME="test_commit_from_current_directory_without_config"
+    start_test $TESTNAME
 
     setup_test_repository &&\
     git checkout -b 1-initial-branch && \
@@ -75,20 +75,20 @@ test_commit_from_current_directory_without_config() {
 
     # Check if the commit was successful
     if [ $? -ne 0 ]; then
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
     # Check if the commit message is correct
     if [ "$(git log -1 --pretty=%B)" != '#1: Hello, git!' ]; then
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
-    pass_test $FUNCNAME
+    pass_test $TESTNAME
 }
 
 test_use_config_from_current_directory() {
-    FUNCNAME="test_use_config_from_current_directory"
-    start_test $FUNCNAME
+    TESTNAME="test_use_config_from_current_directory"
+    start_test $TESTNAME
 
     setup_test_repository &&\
     git checkout -b feature/DEV-38-setup-new-module && \
@@ -114,20 +114,20 @@ test_use_config_from_current_directory() {
 
     # Check if the commit was successful
     if [ $? -ne 0 ]; then
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
     # Check if the commit message is correct
     if [ "$(git log -1 --pretty=%B)" != '[DEV-38] Add a new file' ]; then
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
-    pass_test $FUNCNAME
+    pass_test $TESTNAME
 }
 
 test_commit_from_subdirectory() {
-    FUNCNAME="test_commit_from_subdirectory"
-    start_test $FUNCNAME
+    TESTNAME="test_commit_from_subdirectory"
+    start_test $TESTNAME
 
     setup_test_repository &&\
     git checkout -b prepare-for-cfg13 && \
@@ -157,22 +157,22 @@ test_commit_from_subdirectory() {
     # Check if the commit was successful
     if [ $? -ne 0 ]; then
         cd ..
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
     # Check if the commit message is correct
     if [ "$(git log -1 --pretty=%B)" != '(cfg13) Do something very useful' ]; then
         cd ..
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
     cd ..
-    pass_test $FUNCNAME
+    pass_test $TESTNAME
 }
 
 test_set_correct_author() {
-    FUNCNAME="test_set_correct_author"
-    start_test $FUNCNAME
+    TESTNAME="test_set_correct_author"
+    start_test $TESTNAME
 
     EXPECTED_AUTHOR_NAME="John Doe"
     EXPECTED_EMAIL="johntheprogrammer@commit.commit"
@@ -192,12 +192,12 @@ test_set_correct_author() {
 
     # Check if the commit was successful
     if [ $? -ne 0 ]; then
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
     # Check if the commit message is correct
     if [ "$(git log -1 --pretty=%B)" != '#1: Hello, git!' ]; then
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
     # Check if the commit author name is correct
@@ -205,7 +205,7 @@ test_set_correct_author() {
     echo "Author name: ${ACTUAL_AUTHOR_NAME}"
     if [ "${ACTUAL_AUTHOR_NAME}" != "${EXPECTED_AUTHOR_NAME}" ]; then
         echo "Incorrect author name: expected ${EXPECTED_AUTHOR_NAME}, got ${ACTUAL_AUTHOR_NAME}"
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
     # Check if the commit author email is correct
@@ -213,10 +213,44 @@ test_set_correct_author() {
     echo "Author email: ${ACTUAL_EMAIL}"
     if [ "${ACTUAL_EMAIL}" != "${EXPECTED_EMAIL}" ]; then
         echo "Incorrect author email: expected ${EXPECTED_EMAIL}, got ${ACTUAL_EMAIL}"
-        fail_test $FUNCNAME
+        fail_test $TESTNAME
     fi
 
-    pass_test $FUNCNAME
+    pass_test $TESTNAME
+}
+
+test_use_config_with_empty_regex() {
+    TESTNAME="test_use_config_with_empty_regex"
+    start_test $TESTNAME
+
+    setup_test_repository &&\
+    git checkout -b feature/WIP-88-add-privacy-manifest && \
+
+    # Write a config file
+    echo '
+    { 
+        "issueRegex": ""
+    }
+    ' > .commit.json && \
+
+    # Create a new file
+    echo "Hello, World!" > hello && \
+
+    git add hello && \
+
+    # Commit the file
+    echo "Expecting exit with error..." && \
+    ../bin/commit "Add missing privacy manifest"
+
+    # Check if the commit was successful
+    if [ $? -eq 0 ]; then
+        echo "Expected exit with error, but the commit was successful"
+        fail_test $TESTNAME
+    fi 
+
+    echo "Failed with error as expected!"
+    pass_test $TESTNAME
+
 }
 
 # MARK: - Run Tests
@@ -228,3 +262,4 @@ test_commit_from_current_directory_without_config
 test_use_config_from_current_directory
 test_commit_from_subdirectory
 test_set_correct_author
+test_use_config_with_empty_regex
