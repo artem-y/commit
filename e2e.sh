@@ -219,6 +219,40 @@ test_set_correct_author() {
     pass_test $TESTNAME
 }
 
+test_use_config_with_empty_regex() {
+    TESTNAME="test_use_config_with_empty_regex"
+    start_test $TESTNAME
+
+    setup_test_repository &&\
+    git checkout -b feature/WIP-88-add-privacy-manifest && \
+
+    # Write a config file
+    echo '
+    { 
+        "issueRegex": ""
+    }
+    ' > .commit.json && \
+
+    # Create a new file
+    echo "Hello, World!" > hello && \
+
+    git add hello && \
+
+    # Commit the file
+    echo "Expecting exit with error..." && \
+    ../bin/commit "Add missing privacy manifest"
+
+    # Check if the commit was successful
+    if [ $? -eq 0 ]; then
+        echo "Expected exit with error, but the commit was successful"
+        fail_test $TESTNAME
+    fi 
+
+    echo "Failed with error as expected!"
+    pass_test $TESTNAME
+
+}
+
 # MARK: - Run Tests
 
 build_if_needed
@@ -228,3 +262,4 @@ test_commit_from_current_directory_without_config
 test_use_config_from_current_directory
 test_commit_from_subdirectory
 test_set_correct_author
+test_use_config_with_empty_regex
