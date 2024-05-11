@@ -154,6 +154,22 @@ func Test_ReadCommitConfig_WhenIssueRegexIsEmpty_ReturnsError(t *testing.T) {
 
 }
 
+func Test_ReadCommitConfig_WhenIssueRegexIsInvalid_ReturnsError(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	configJson := "{\"issueRegex\":\"(123\"}"
+	mock.Results.ReadFile.Success = []byte(configJson)
+
+	// Act
+	_, err := config.ReadCommitConfig(mock, "some/path")
+
+	// Assert
+	if err == nil {
+		t.Error("Expected an error, got `nil`")
+	}
+
+}
+
 func Test_MakeDefaultConfig_CreatesConfigWithDefaultValues(t *testing.T) {
 	// Arrange
 	expectedConfig := config.CommitConfig{
