@@ -22,12 +22,6 @@ yellow() {
     echo "\033[0;33m$1\033[0m"
 }
 
-setup_local_git_config() {
-    git config --local init.defaultBranch main
-    git config --local user.name "GitHub Actions CI Runner"
-    git config --local user.email "--"
-}
-
 setup_test_repository() { 
     # Create a new directory
     mkdir testdir && \
@@ -35,6 +29,10 @@ setup_test_repository() {
 
     # Initialize a new repository
     git init && \
+    # Set up local git config inside the new directory
+    git config --local init.defaultBranch main && \
+    git config --local user.name "GitHub Actions CI Runner" && \
+    git config --local user.email "--" && \
     touch file && git add file && git commit -m "Initial commit"
 }
 
@@ -256,7 +254,6 @@ test_use_config_with_empty_regex() {
 # MARK: - Run Tests
 
 build_if_needed
-setup_local_git_config
 
 test_commit_from_current_directory_without_config
 test_use_config_from_current_directory
