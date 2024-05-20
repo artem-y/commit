@@ -256,7 +256,7 @@ test_use_config_with_empty_regex() {
 # MARK: - Run Tests
 
 build_if_needed
-setup_global_git_config
+setup_local_git_config
 
 test_commit_from_current_directory_without_config
 test_use_config_from_current_directory
