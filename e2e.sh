@@ -22,10 +22,10 @@ yellow() {
     echo "\033[0;33m$1\033[0m"
 }
 
-setup_global_git_config() {
-    git config --global init.defaultBranch main
-    git config --global user.name "GitHub Actions CI Runner"
-    git config --global user.email "--"
+setup_local_git_config() {
+    git config --local init.defaultBranch main
+    git config --local user.name "GitHub Actions CI Runner"
+    git config --local user.email "--"
 }
 
 setup_test_repository() { 
