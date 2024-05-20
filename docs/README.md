@@ -93,7 +93,7 @@ For example, the branch named `add-tests-for-CR-127-and-CR-131-features`, the is
 ## Testing
 So far only the core parts of the logic are covered with tests, but I will be adding more in the future.  
 To run the unit tests, use the `make test` or `go test -v ./...` commands.  
-There also are a few end-to-end tests that will run in the CI pipeline to make sure the tool actually works as expected with a real repository. I do not advise running those often manually, since they can potentially execute destructive commands.
+There also are a few end-to-end tests that will run in the CI pipeline to make sure the tool actually works as expected with a real repository. I do not advise running those often manually, since they can potentially execute destructive commands. For example, there is at least one change the tests will try to apply to the global git setup, which is the setting of the default init branch to "main".
 ### Debug
 To check what commit message will be generated without making the actual commit, there is a `-dry-run` flag that can be passed to the command:
 ```shell
