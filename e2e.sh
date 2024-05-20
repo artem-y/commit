@@ -28,9 +28,9 @@ setup_test_repository() {
     cd testdir && \
 
     # Initialize a new repository
+    git config --local init.defaultBranch main && \
     git init && \
     # Set up local git config inside the new directory
-    git config --local init.defaultBranch main && \
     git config --local user.name "GitHub Actions CI Runner" && \
     git config --local user.email "--" && \
     touch file && git add file && git commit -m "Initial commit"
