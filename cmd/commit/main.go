@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/artem-y/commit/internal/config"
@@ -13,7 +14,6 @@ import (
 	"github.com/artem-y/commit/internal/user"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
@@ -47,12 +47,25 @@ func main() {
 		)
 	}
 
-	headRef := getCurrentHead(repo)
+	headFilePath := filepath.Join(
+		worktree.Filesystem.Root(),
+		".git",
+		"HEAD",
+	)
 
-	// Read branch name or HEAD
-	if headRef.Name().IsBranch() {
+	fileReader := config.FileReader{}
 
-		fileReader := config.FileReader{}
+	headFile, _ := fileReader.ReadFile(headFilePath)
+
+	// Read current HEAD from file
+	headFileText := string(headFile)
+
+	if strings.HasPrefix(headFileText, helpers.HEAD_REF_PREFIX) {
+		branchName := strings.TrimPrefix(
+			headFileText,
+			helpers.HEAD_REF_PREFIX,
+		)
+
 		cfg, err := config.ReadCommitConfig(fileReader, configFilePath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, helpers.Red("Failed to read config: %v\n"), err)
@@ -60,23 +73,18 @@ func main() {
 		}
 
 		messageGenerator := message_generator.MessageGenerator{
-			BranchName:  headRef.Name().Short(),
+			BranchName:  branchName,
 			UserMessage: commitMessage,
 			Config:      cfg,
 		}
 		commitMessage = messageGenerator.GenerateMessage()
-
-		if !dryRun {
-			commitChanges(repo, worktree, commitMessage)
-		}
-
-		fmt.Println(commitMessage)
-
-	} else if headRef.Name().IsTag() {
-		fmt.Printf("HEAD is a tag: %v\n", headRef.Name().Short())
-	} else {
-		fmt.Printf("Detached HEAD at %v\n", headRef.Hash())
 	}
+
+	if !dryRun {
+		commitChanges(repo, worktree, commitMessage)
+	}
+
+	fmt.Println(commitMessage)
 }
 
 // Reads commit message from command line arguments
@@ -102,16 +110,6 @@ func openRepo() *git.Repository {
 		os.Exit(1)
 	}
 	return repo
-}
-
-// Reads the current HEAD reference
-func getCurrentHead(repo *git.Repository) *plumbing.Reference {
-	headRef, err := repo.Head()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, helpers.Red("Failed to read current HEAD: %v\n"), err)
-		os.Exit(1)
-	}
-	return headRef
 }
 
 // Opens worktree
