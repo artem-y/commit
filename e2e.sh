@@ -32,8 +32,7 @@ setup_test_repository() {
     git init && \
     # Set up local git config inside the new directory
     git config --local user.name "GitHub Actions CI Runner" && \
-    git config --local user.email "--" && \
-    touch file && git add file && git commit -m "Initial commit"
+    git config --local user.email "--"
 }
 
 start_test() {
@@ -251,6 +250,56 @@ test_use_config_with_empty_regex() {
 
 }
 
+test_commit_with_detached_head() {
+    TESTNAME="test_commit_with_detached_head"
+    start_test $TESTNAME
+
+    setup_test_repository &&\
+    git config --local advice.detachedHead false && \
+    git checkout -b feature/DEV-21-validation && \
+
+    # Write a config file
+    echo '
+    { 
+        "issueRegex": "DEV-[0-9]+",
+        "outputIssuePrefix": "",
+        "outputIssueSuffix": "",
+        "outputStringPrefix": "[",
+        "outputStringSuffix": "] "
+    }
+    ' > .commit.json && \
+
+    # Create the initial commit
+    echo "Hello, World!" > hello1 && \
+    git add hello1 && \
+    ../bin/commit "Initial commit" && \
+
+    # Create the second commit
+    touch hello2 && \
+    git add hello2 && \
+    ../bin/commit "Second commit" && \
+
+    # Checkout the previous commit
+    git checkout 'HEAD^' && \
+    
+    # Create commit with alternative changes
+    touch hello3 && \
+    git add hello3 && \
+    ../bin/commit "Alternative commit"
+
+    # Check if the commit was successful
+    if [ $? -ne 0 ]; then
+        fail_test $TESTNAME
+    fi
+
+    # Check if the commit message is correct
+    if [ "$(git log -1 --pretty=%B)" != 'Alternative commit' ]; then
+        fail_test $TESTNAME
+    fi
+
+    pass_test $TESTNAME
+}
+
 # MARK: - Run Tests
 
 build_if_needed
@@ -260,3 +309,4 @@ test_use_config_from_current_directory
 test_commit_from_subdirectory
 test_set_correct_author
 test_use_config_with_empty_regex
+test_commit_with_detached_head

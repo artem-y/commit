@@ -7,4 +7,5 @@ const (
 	DEFAULT_OUTPUT_ISSUE_SUFFIX  = ""
 	DEFAULT_OUTPUT_STRING_PREFIX = ""
 	DEFAULT_OUTPUT_STRING_SUFFIX = ": "
+	HEAD_REF_PREFIX              = "ref: refs/heads/"
 )
