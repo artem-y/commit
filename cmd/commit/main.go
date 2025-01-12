@@ -55,11 +55,11 @@ func main() {
 
 	fileReader := config.FileReader{}
 
-	headFile, _ := fileReader.ReadFile(headFilePath)
-
 	// Read current HEAD from file
+	headFile, _ := fileReader.ReadFile(headFilePath)
 	headFileText := string(headFile)
 
+	// If there is a branch name in the HEAD file, modify the commit message
 	if strings.HasPrefix(headFileText, helpers.HEAD_REF_PREFIX) {
 		branchName := strings.TrimPrefix(
 			headFileText,
