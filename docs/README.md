@@ -58,7 +58,7 @@ The result: for example, if the branch name is `312-improve-stability-of-the-cor
 > #312: Refactor core service initialization logic
 ### Configuration
 By default, the tool recognizes the pattern suggested by GitHub when auto-generating branches, when issue numbers are just digits: `28-update-documentation` for the issue  `#28`.  
-But this can be changed by setting different values in a `.commit.json` file at the root of your repository:  
+But this can be changed by providing a `.commit.json` file with different values at the root of your repository:  
 ```json
 {  
     "issueRegex": "ABC-[0-9]+", 
@@ -79,8 +79,7 @@ The structure of the resulting commit message is as follows:
 ```
 <outputStringPrefix><outputIssuePrefix><issueRegex><outputIssueSuffix>, <outputIssuePrefix><issueRegex><outputIssueSuffix><outputStringSuffix> <commit message>
 ```
-If the `.commit.json` file is not included, the tool will just fall back to its default settings (GitHub style issues).  
-Same will happen for any of the settings that is not included in the config json. See the default values in [constants.go](/internal/helpers/constants.go) file.
+If the `.commit.json` file is not included, the tool will just fall back to its default settings (GitHub style issues). See the default values in [constants.go](/internal/helpers/constants.go) file.
 ### Custom Config Path
 If you don't want to include the `.commit.json` file at the root of your repository, path to the config file can be passed with a `-config-path` flag like this (linux/macOS shell example):
 ```shell

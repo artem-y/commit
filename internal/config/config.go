@@ -67,9 +67,12 @@ func MakeDefaultConfig() CommitConfig {
 // MARK: - Private
 
 func makeConfig(cfgDto commitConfigDTO) CommitConfig {
-	cfg := MakeDefaultConfig()
+	cfg := CommitConfig{}
 
 	if cfgDto.IssueRegex != nil {
+		if *cfgDto.IssueRegex == "" {
+			return cfg
+		}
 		cfg.IssueRegex = *cfgDto.IssueRegex
 	}
 
@@ -87,6 +90,10 @@ func makeConfig(cfgDto commitConfigDTO) CommitConfig {
 
 	if cfgDto.OutputStringSuffix != nil {
 		cfg.OutputStringSuffix = *cfgDto.OutputStringSuffix
+	}
+
+	if (cfg == CommitConfig{}) {
+		return MakeDefaultConfig()
 	}
 
 	return cfg

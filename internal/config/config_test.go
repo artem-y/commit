@@ -110,7 +110,7 @@ func Test_ReadCommitConfig_WhenOnlyRegexInConfix_ReturnsConfigWithRegex(t *testi
 	configJson := fmt.Sprintf("{\"issueRegex\":\"%s\"}", expectedRegex)
 	mock.Results.ReadFile.Success = []byte(configJson)
 
-	expectedConfig := config.MakeDefaultConfig()
+	expectedConfig := config.CommitConfig{}
 	expectedConfig.IssueRegex = expectedRegex
 
 	// Act
