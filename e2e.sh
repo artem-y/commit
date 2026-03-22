@@ -22,7 +22,7 @@ yellow() {
     echo "\033[0;33m$1\033[0m"
 }
 
-setup_test_repository() { 
+setup_test_repository() {
     # Create a new directory
     mkdir testdir && \
     cd testdir && \
@@ -98,7 +98,7 @@ test_use_config_from_current_directory() {
 
     # Write a config file
     echo '
-    { 
+    {
         "issueRegex": "DEV-[0-9]+",
         "outputIssuePrefix": "[",
         "outputIssueSuffix": "]",
@@ -137,7 +137,7 @@ test_commit_from_subdirectory() {
 
     # Write a config file
     echo '
-    { 
+    {
         "issueRegex": "cfg[0-9]+",
         "outputIssuePrefix": "",
         "outputIssueSuffix": "",
@@ -231,7 +231,7 @@ test_use_config_with_empty_regex() {
 
     # Write a config file
     echo '
-    { 
+    {
         "issueRegex": ""
     }
     ' > .commit.json && \
@@ -266,7 +266,7 @@ test_commit_with_detached_head() {
 
     # Write a config file
     echo '
-    { 
+    {
         "issueRegex": "DEV-[0-9]+",
         "outputIssuePrefix": "",
         "outputIssueSuffix": "",
