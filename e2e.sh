@@ -311,7 +311,7 @@ test_commit_from_another_worktree() {
     start_test $TESTNAME
 
     setup_test_repository &&\
-    git checkout -b main && \
+    git checkout -b initial-branch && \
 
     # Create the initial commit
     echo "Hello, main!" > hello4 && \
