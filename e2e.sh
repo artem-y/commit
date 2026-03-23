@@ -327,7 +327,7 @@ test_commit_from_another_worktree() {
     git add hello.worktree && \
 
     # Commit the file
-    ../bin/commit "Commited from another worktree"
+    ../bin/commit "Committed from another worktree"
 
     # Check if the commit was successful
     if [ $? -ne 0 ]; then
@@ -336,7 +336,7 @@ test_commit_from_another_worktree() {
     fi
 
     # Check if the commit message is correct
-    if [ "$(git log -1 --pretty=%B)" != '#333: Commited from another worktree' ]; then
+    if [ "$(git log -1 --pretty=%B)" != '#333: Committed from another worktree' ]; then
         remove_worktree ../worktree_copy
         fail_test $TESTNAME
     fi
