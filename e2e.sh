@@ -22,7 +22,7 @@ yellow() {
     echo "\033[0;33m$1\033[0m"
 }
 
-setup_test_repository() { 
+setup_test_repository() {
     # Create a new directory
     mkdir testdir && \
     cd testdir && \
@@ -33,6 +33,12 @@ setup_test_repository() {
     # Set up local git config inside the new directory
     git config --local user.name "GitHub Actions CI Runner" && \
     git config --local user.email "--"
+}
+
+remove_worktree() {
+    cd ../testdir && \
+    git worktree remove $1 && \
+    rm -rf $1
 }
 
 start_test() {
@@ -92,7 +98,7 @@ test_use_config_from_current_directory() {
 
     # Write a config file
     echo '
-    { 
+    {
         "issueRegex": "DEV-[0-9]+",
         "outputIssuePrefix": "[",
         "outputIssueSuffix": "]",
@@ -131,7 +137,7 @@ test_commit_from_subdirectory() {
 
     # Write a config file
     echo '
-    { 
+    {
         "issueRegex": "cfg[0-9]+",
         "outputIssuePrefix": "",
         "outputIssueSuffix": "",
@@ -225,7 +231,7 @@ test_use_config_with_empty_regex() {
 
     # Write a config file
     echo '
-    { 
+    {
         "issueRegex": ""
     }
     ' > .commit.json && \
@@ -260,7 +266,7 @@ test_commit_with_detached_head() {
 
     # Write a config file
     echo '
-    { 
+    {
         "issueRegex": "DEV-[0-9]+",
         "outputIssuePrefix": "",
         "outputIssueSuffix": "",
@@ -300,6 +306,45 @@ test_commit_with_detached_head() {
     pass_test $TESTNAME
 }
 
+test_commit_from_another_worktree() {
+    TESTNAME="test_commit_from_another_worktree"
+    start_test $TESTNAME
+
+    setup_test_repository &&\
+    git checkout -b initial-branch && \
+
+    # Create the initial commit
+    echo "Hello, main!" > hello4 && \
+    git add hello4 && \
+    ../bin/commit "Initial commit" && \
+
+    # Add a worktree on a new branch
+    git worktree add ../worktree_copy -b feature/333-additional-work && \
+    cd ../worktree_copy && \
+
+    # Create a new file
+    echo "Hello worktree!" > hello.worktree && \
+    git add hello.worktree && \
+
+    # Commit the file
+    ../bin/commit "Committed from another worktree"
+
+    # Check if the commit was successful
+    if [ $? -ne 0 ]; then
+        remove_worktree ../worktree_copy
+        fail_test $TESTNAME
+    fi
+
+    # Check if the commit message is correct
+    if [ "$(git log -1 --pretty=%B)" != '#333: Committed from another worktree' ]; then
+        remove_worktree ../worktree_copy
+        fail_test $TESTNAME
+    fi
+
+    remove_worktree ../worktree_copy
+    pass_test $TESTNAME
+}
+
 # MARK: - Run Tests
 
 build_if_needed
@@ -310,3 +355,4 @@ test_commit_from_subdirectory
 test_set_correct_author
 test_use_config_with_empty_regex
 test_commit_with_detached_head
+test_commit_from_another_worktree

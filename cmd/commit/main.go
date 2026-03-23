@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/artem-y/commit/internal/config"
@@ -14,6 +13,7 @@ import (
 	"github.com/artem-y/commit/internal/user"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
@@ -47,25 +47,17 @@ func main() {
 		)
 	}
 
-	headFilePath := filepath.Join(
-		worktree.Filesystem.Root(),
-		".git",
-		"HEAD",
-	)
+	head, err := repo.Reference(plumbing.HEAD, false)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, helpers.Red("Failed to read HEAD: %v\n"), err)
+		os.Exit(1)
+	}
 
-	fileReader := config.FileReader{}
+	// If HEAD points to branch, modify the commit message
+	if head.Type() == plumbing.SymbolicReference && head.Target().IsBranch() {
+		branchName := head.Target().Short()
 
-	// Read current HEAD from file
-	headFile, _ := fileReader.ReadFile(headFilePath)
-	headFileText := string(headFile)
-
-	// If there is a branch name in the HEAD file, modify the commit message
-	if strings.HasPrefix(headFileText, helpers.HEAD_REF_PREFIX) {
-		branchName := strings.TrimPrefix(
-			headFileText,
-			helpers.HEAD_REF_PREFIX,
-		)
-
+		fileReader := config.FileReader{}
 		cfg, err := config.ReadCommitConfig(fileReader, configFilePath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, helpers.Red("Failed to read config: %v\n"), err)
@@ -101,8 +93,10 @@ func getCommitMessage() string {
 
 // Opens the current repository
 func openRepo() *git.Repository {
-
-	options := git.PlainOpenOptions{DetectDotGit: true}
+	options := git.PlainOpenOptions{
+		DetectDotGit:          true,
+		EnableDotGitCommonDir: true,
+	}
 
 	repo, err := git.PlainOpenWithOptions(".", &options)
 	if err != nil {
