@@ -196,11 +196,11 @@ func Test_EncodeConfigAtPath_WithValidConfig_ReturnsConfigAsJson(t *testing.T) {
 	// Arrange
 	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
 	expectedConfig := `{
-  "IssueRegex": "SWE-[0-9]+",
-  "OutputIssuePrefix": "(",
-  "OutputIssueSuffix": ")",
-  "OutputStringPrefix": "(( ",
-  "OutputStringSuffix": " )) "
+  "issueRegex": "SWE-[0-9]+",
+  "outputIssuePrefix": "(",
+  "outputIssueSuffix": ")",
+  "outputStringPrefix": "(( ",
+  "outputStringSuffix": " )) "
 }`
 
 	mock.Results.ReadFile.Success = []byte(expectedConfig)
@@ -260,11 +260,11 @@ func Test_EncodeConfigAtPath_WhenConfigContainsUnicodeEscapableCharacters_DoesNo
 	// Arrange
 	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
 	mock.Results.ReadFile.Success = []byte(`{
-  "IssueRegex": "CORE_[0-9]+",
-  "OutputIssuePrefix": "<",
-  "OutputIssueSuffix": ">",
-  "OutputStringPrefix": "<< ",
-  "OutputStringSuffix": " >> "
+  "issueRegex": "CORE_[0-9]+",
+  "outputIssuePrefix": "<",
+  "outputIssueSuffix": ">",
+  "outputStringPrefix": "<< ",
+  "outputStringSuffix": " >> "
 }`)
 
 	// Act

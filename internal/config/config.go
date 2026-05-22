@@ -61,12 +61,20 @@ func EncodeConfigAtPath(fileReader FileReading, configFilePath string) ([]byte, 
 		return nil, err
 	}
 
+	cfgDto := commitConfigDTO{
+		IssueRegex:         &cfg.IssueRegex,
+		OutputIssuePrefix:  &cfg.OutputIssuePrefix,
+		OutputIssueSuffix:  &cfg.OutputIssueSuffix,
+		OutputStringPrefix: &cfg.OutputStringPrefix,
+		OutputStringSuffix: &cfg.OutputStringSuffix,
+	}
+
 	var cfgBuffer bytes.Buffer
 	encoder := json.NewEncoder(&cfgBuffer)
 	encoder.SetIndent("", "  ")
 	encoder.SetEscapeHTML(false)
 
-	if err := encoder.Encode(cfg); err != nil {
+	if err := encoder.Encode(cfgDto); err != nil {
 		return nil, err
 	}
 
