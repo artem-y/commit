@@ -152,7 +152,6 @@ func Test_ReadCommitConfig_WhenIssueRegexIsEmpty_ReturnsError(t *testing.T) {
 	if err == nil {
 		t.Error("Expected an error, got `nil`")
 	}
-
 }
 
 func Test_ReadCommitConfig_WhenIssueRegexIsInvalid_ReturnsError(t *testing.T) {
@@ -168,7 +167,6 @@ func Test_ReadCommitConfig_WhenIssueRegexIsInvalid_ReturnsError(t *testing.T) {
 	if err == nil {
 		t.Error("Expected an error, got `nil`")
 	}
-
 }
 
 func Test_MakeDefaultConfig_CreatesConfigWithDefaultValues(t *testing.T) {
@@ -223,6 +221,41 @@ func Test_EncodeConfigAtPath_WithValidConfig_ReturnsConfigAsJson(t *testing.T) {
 	}
 }
 
+func Test_EncodeConfigAtPath_WhenFailedToReadFile_ReturnsError(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	mock.Results.ReadFile.Error = errors.New("Error: Failed to read file")
+
+	// Act
+	cfg, err := config.EncodeConfigAtPath(mock, "a/path")
+
+	// Assert
+	if cfg != nil {
+		t.Errorf("Expected no config, got %v", cfg)
+	}
+	if err == nil {
+		t.Error("Expected an error, got `nil`")
+	}
+}
+
+func Test_EncodeConfigAtPath_WhenFailedToEncodeConfig_ReturnsError(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	configJsonWithInvalidRegex := "{\"issueRegex\":\"(123\"}"
+	mock.Results.ReadFile.Success = []byte(configJsonWithInvalidRegex)
+
+	// Act
+	cfg, err := config.EncodeConfigAtPath(mock, "path/to/invalid/config")
+
+	// Assert
+	if cfg != nil {
+		t.Errorf("Expected no config, got %v", cfg)
+	}
+	if err == nil {
+		t.Error("Expected an error, got 'nil'")
+	}
+}
+
 func Test_EncodeConfigAtPath_WhenConfigContainsUnicodeEscapableCharacters_DoesNotEscapeCharacter(t *testing.T) {
 	// Arrange
 	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
@@ -243,7 +276,7 @@ func Test_EncodeConfigAtPath_WhenConfigContainsUnicodeEscapableCharacters_DoesNo
 	}
 
 	if strings.Contains(string(cfg), "\\u003c") || strings.Contains(string(cfg), "\\u003e") {
-		t.Errorf("Expected '<' to stay unescaped, got '%s'", string(cfg))
+		t.Errorf("Expected '<' and '>' to stay unescaped, got '%s'", string(cfg))
 	}
 }
 
