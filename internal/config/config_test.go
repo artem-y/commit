@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/artem-y/commit/internal/config"
@@ -190,6 +191,59 @@ func Test_MakeDefaultConfig_CreatesConfigWithDefaultValues(t *testing.T) {
 			makeJSON(expectedConfig),
 			makeJSON(cfg),
 		)
+	}
+}
+
+func Test_EncodeConfigAtPath_WithValidConfig_ReturnsConfigAsJson(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	expectedConfig := `{
+  "IssueRegex": "SWE-[0-9]+",
+  "OutputIssuePrefix": "(",
+  "OutputIssueSuffix": ")",
+  "OutputStringPrefix": "(( ",
+  "OutputStringSuffix": " )) "
+}`
+
+	mock.Results.ReadFile.Success = []byte(expectedConfig)
+
+	// Act
+	cfg, err := config.EncodeConfigAtPath(mock, "some/path")
+	// Assert
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if !reflect.DeepEqual(cfg, mock.Results.ReadFile.Success) {
+		t.Errorf(
+			"Expected config JSON ('%s'), got '%s'",
+			string(mock.Results.ReadFile.Success),
+			string(cfg),
+		)
+	}
+}
+
+func Test_EncodeConfigAtPath_WhenConfigContainsUnicodeEscapableCharacters_DoesNotEscapeCharacter(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	mock.Results.ReadFile.Success = []byte(`{
+  "IssueRegex": "CORE_[0-9]+",
+  "OutputIssuePrefix": "<",
+  "OutputIssueSuffix": ">",
+  "OutputStringPrefix": "<< ",
+  "OutputStringSuffix": " >> "
+}`)
+
+	// Act
+	cfg, err := config.EncodeConfigAtPath(mock, "some/path/to/config")
+
+	// Assert
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if strings.Contains(string(cfg), "\\u003c") || strings.Contains(string(cfg), "\\u003e") {
+		t.Errorf("Expected '<' to stay unescaped, got '%s'", string(cfg))
 	}
 }
 
