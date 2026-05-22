@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"regexp"
@@ -53,17 +54,23 @@ func ReadCommitConfig(fileReader FileReading, configFilePath string) (CommitConf
 	return cfg, nil
 }
 
-// Marshals config at the given file path into a JSON
-func MarshalConfigAtPath(fileReader FileReading, configFilePath string) ([]byte, error) {
+// Encodes config at the given file path into JSON
+func EncodeConfigAtPath(fileReader FileReading, configFilePath string) ([]byte, error) {
 	cfg, err := ReadCommitConfig(fileReader, configFilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	configJson, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
+	var cfgBuffer bytes.Buffer
+	encoder := json.NewEncoder(&cfgBuffer)
+	encoder.SetIndent("", "  ")
+	encoder.SetEscapeHTML(false)
+
+	if err := encoder.Encode(cfg); err != nil {
 		return nil, err
 	}
+
+	configJson := bytes.TrimSuffix(cfgBuffer.Bytes(), []byte("\n"))
 
 	return configJson, nil
 }

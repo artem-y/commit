@@ -57,7 +57,7 @@ func main() {
 	fileReader := config.FileReader{}
 
 	if showConfig {
-		configJSON, err := config.MarshalConfigAtPath(fileReader, configFilePath)
+		configJSON, err := config.EncodeConfigAtPath(fileReader, configFilePath)
 		if err == nil {
 			fmt.Fprintf(os.Stdout, "%s\n", configJSON)
 			os.Exit(0)
