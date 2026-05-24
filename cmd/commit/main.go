@@ -86,7 +86,8 @@ func main() {
 			helpers.HEAD_REF_PREFIX,
 		)
 
-		cfg, err := config.ReadCommitConfig(fileReader, configFilePath)
+		isValidating := true
+		cfg, err := config.ReadCommitConfig(fileReader, configFilePath, isValidating)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, helpers.Red("Failed to read config: %v\n"), err)
 			os.Exit(1)

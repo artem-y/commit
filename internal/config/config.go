@@ -28,7 +28,7 @@ type commitConfigDTO struct {
 }
 
 // Reads config at the file path and unmarshals it into commitConfig struct
-func ReadCommitConfig(fileReader FileReading, configFilePath string) (CommitConfig, error) {
+func ReadCommitConfig(fileReader FileReading, configFilePath string, isValidating bool) (CommitConfig, error) {
 	var cfgDto commitConfigDTO
 
 	_, err := fileReader.Stat(configFilePath)
@@ -39,16 +39,22 @@ func ReadCommitConfig(fileReader FileReading, configFilePath string) (CommitConf
 			return CommitConfig{}, err
 		}
 
-		err = json.Unmarshal(file, &cfgDto)
-		if err != nil {
-			return CommitConfig{}, err
+		if len(file) > 0 {
+			err = json.Unmarshal(file, &cfgDto)
+			if err != nil {
+				return CommitConfig{}, err
+			}
+		} else {
+			return CommitConfig{}, nil
 		}
 	}
 
 	cfg := makeConfig(cfgDto)
 
-	if err := validateRegex(cfg.IssueRegex); err != nil {
-		return CommitConfig{}, err
+	if isValidating {
+		if err := validateRegex(cfg.IssueRegex); err != nil {
+			return CommitConfig{}, err
+		}
 	}
 
 	return cfg, nil
@@ -56,7 +62,8 @@ func ReadCommitConfig(fileReader FileReading, configFilePath string) (CommitConf
 
 // Encodes config at the given file path into JSON
 func EncodeConfigAtPath(fileReader FileReading, configFilePath string) ([]byte, error) {
-	cfg, err := ReadCommitConfig(fileReader, configFilePath)
+	isValidating := false
+	cfg, err := ReadCommitConfig(fileReader, configFilePath, isValidating)
 	if err != nil {
 		return nil, err
 	}

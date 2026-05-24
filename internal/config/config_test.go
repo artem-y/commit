@@ -22,7 +22,7 @@ func Test_ReadCommitConfig_WhenFileDoesNotExist_ReturnsDefaultConfig(t *testing.
 	defaultConfig := config.MakeDefaultConfig()
 
 	// Act
-	cfg, err := config.ReadCommitConfig(mock, "some/path")
+	cfg, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	for _, invocation := range mock.Invocations {
@@ -56,7 +56,7 @@ func Test_ReadCommitConfig_WhenFilledWithValidSettings_LoadsAllValuesFromConfig(
 	mock.Results.ReadFile.Success = []byte(configJson)
 
 	// Act
-	cfg, err := config.ReadCommitConfig(mock, "some/path")
+	cfg, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err != nil {
@@ -72,13 +72,35 @@ func Test_ReadCommitConfig_WhenFilledWithValidSettings_LoadsAllValuesFromConfig(
 	}
 }
 
+func Test_ReadCommitConfig_WithoutValidatingEmptyFile_ReturnsEmptyConfig(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	mock.Results.ReadFile.Success = []byte("")
+
+	// Act
+	cfg, err := config.ReadCommitConfig(mock, "file/path", false)
+
+	// Assert
+	if err != nil {
+		t.Errorf("Expected no error, got `%s`", err.Error())
+	}
+	expectedConfig := config.CommitConfig{}
+	if !reflect.DeepEqual(cfg, expectedConfig) {
+		t.Errorf(
+			"Expected `%s', got `%s`",
+			makeJSON(expectedConfig),
+			makeJSON(cfg),
+		)
+	}
+}
+
 func Test_ReadCommitConfig_WhenInvalidJson_ReturnsError(t *testing.T) {
 	// Arrange
 	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
 	mock.Results.ReadFile.Success = []byte("{invalid json}")
 
 	// Act
-	_, err := config.ReadCommitConfig(mock, "some/path")
+	_, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err == nil {
@@ -92,7 +114,7 @@ func Test_ReadCommitConfig_WhenFailedToReadFile_ReturnsError(t *testing.T) {
 	mock.Results.ReadFile.Error = errors.New("failed to read file")
 
 	// Act
-	_, err := config.ReadCommitConfig(mock, "some/path")
+	_, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err == nil {
@@ -115,7 +137,7 @@ func Test_ReadCommitConfig_WhenOnlyRegexInConfix_ReturnsConfigWithRegex(t *testi
 	expectedConfig.IssueRegex = expectedRegex
 
 	// Act
-	cfg, err := config.ReadCommitConfig(mock, "some/path")
+	cfg, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err != nil {
@@ -146,7 +168,7 @@ func Test_ReadCommitConfig_WhenIssueRegexIsEmpty_ReturnsError(t *testing.T) {
 	mock.Results.ReadFile.Success = []byte(configJson)
 
 	// Act
-	_, err := config.ReadCommitConfig(mock, "some/path")
+	_, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err == nil {
@@ -161,7 +183,7 @@ func Test_ReadCommitConfig_WhenIssueRegexIsInvalid_ReturnsError(t *testing.T) {
 	mock.Results.ReadFile.Success = []byte(configJson)
 
 	// Act
-	_, err := config.ReadCommitConfig(mock, "some/path")
+	_, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err == nil {
@@ -224,7 +246,8 @@ func Test_EncodeConfigAtPath_WithValidConfig_ReturnsConfigAsJson(t *testing.T) {
 func Test_EncodeConfigAtPath_WhenFailedToReadFile_ReturnsError(t *testing.T) {
 	// Arrange
 	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
-	mock.Results.ReadFile.Error = errors.New("Error: Failed to read file")
+	expectedErrorMessage := "Error: Failed to read file"
+	mock.Results.ReadFile.Error = errors.New(expectedErrorMessage)
 
 	// Act
 	cfg, err := config.EncodeConfigAtPath(mock, "a/path")
@@ -236,12 +259,15 @@ func Test_EncodeConfigAtPath_WhenFailedToReadFile_ReturnsError(t *testing.T) {
 	if err == nil {
 		t.Error("Expected an error, got `nil`")
 	}
+	if err.Error() != expectedErrorMessage {
+		t.Errorf("Expected error '%s', got '%v'", expectedErrorMessage, err)
+	}
 }
 
-func Test_EncodeConfigAtPath_WhenFailedToEncodeConfig_ReturnsError(t *testing.T) {
+func Test_EncodeConfigAtPath_WithInvalidJSON_ReturnsError(t *testing.T) {
 	// Arrange
 	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
-	configJsonWithInvalidRegex := "{\"issueRegex\":\"(123\"}"
+	configJsonWithInvalidRegex := "{\"issueRegex\":\"abc}"
 	mock.Results.ReadFile.Success = []byte(configJsonWithInvalidRegex)
 
 	// Act
