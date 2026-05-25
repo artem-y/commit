@@ -60,8 +60,8 @@ The result: for example, if the branch name is `312-improve-stability-of-the-cor
 By default, the tool recognizes the pattern suggested by GitHub when auto-generating branches, when issue numbers are just digits: `28-update-documentation` for the issue  `#28`.  
 But this can be changed by providing a `.commit.json` file with different values at the root of your repository:  
 ```json
-{  
-    "issueRegex": "ABC-[0-9]+", 
+{
+    "issueRegex": "ABC-[0-9]+",
     "outputIssuePrefix": "#",
     "outputIssueSuffix": "",
     "outputStringPrefix": "",
