@@ -67,8 +67,6 @@ func main() {
 		}
 	}
 
-	// <<<<<<< HEAD
-
 	commitMessage := getCommitMessage()
 
 	head, err := repo.Reference(plumbing.HEAD, false)
