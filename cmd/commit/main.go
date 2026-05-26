@@ -26,6 +26,14 @@ func main() {
 		"Path to the config json file",
 	)
 
+	var showConfig bool
+	flag.BoolVar(
+		&showConfig,
+		"show-config",
+		false,
+		"Prints out the current config",
+	)
+
 	var dryRun bool
 	flag.BoolVar(
 		&dryRun,
@@ -36,7 +44,6 @@ func main() {
 
 	flag.Parse()
 
-	commitMessage := getCommitMessage()
 	repo := openRepo()
 	worktree := openWorktree(repo)
 
@@ -46,6 +53,21 @@ func main() {
 			helpers.DEFAULT_CONFIG_FILE_PATH,
 		)
 	}
+
+	fileReader := config.FileReader{}
+
+	if showConfig {
+		configJSON, err := config.EncodeConfigAtPath(fileReader, configFilePath)
+		if err == nil {
+			fmt.Fprintf(os.Stdout, "%s\n", configJSON)
+			os.Exit(0)
+		} else {
+			fmt.Fprintf(os.Stderr, helpers.Red("Failed to parse config: %v\n"), err)
+			os.Exit(1)
+		}
+	}
+
+	commitMessage := getCommitMessage()
 
 	head, err := repo.Reference(plumbing.HEAD, false)
 	if err != nil {
@@ -57,8 +79,8 @@ func main() {
 	if head.Type() == plumbing.SymbolicReference && head.Target().IsBranch() {
 		branchName := head.Target().Short()
 
-		fileReader := config.FileReader{}
-		cfg, err := config.ReadCommitConfig(fileReader, configFilePath)
+		isValidating := true
+		cfg, err := config.ReadCommitConfig(fileReader, configFilePath, isValidating)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, helpers.Red("Failed to read config: %v\n"), err)
 			os.Exit(1)
@@ -131,7 +153,6 @@ func makeCommitOptions(usr user.User) git.CommitOptions {
 
 // Commits changes with provided message
 func commitChanges(repo *git.Repository, worktree *git.Worktree, commitMessage string) {
-
 	checkStagedChanges(worktree)
 
 	usr := user.GetUser(*repo)

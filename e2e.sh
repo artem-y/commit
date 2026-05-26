@@ -345,6 +345,46 @@ test_commit_from_another_worktree() {
     pass_test $TESTNAME
 }
 
+test_show_config() {
+    TESTNAME="test_show_config"
+    start_test $TESTNAME
+
+    setup_test_repository &&\
+    git checkout -b feature/H22-handle-edge-cases && \
+
+    # Write a config file
+    echo '
+    { 
+        "issueRegex": "H[0-9]+",
+        "outputIssuePrefix": "[",
+        "outputIssueSuffix": "]",
+        "outputStringPrefix": "",
+        "outputStringSuffix": " "
+    }
+    ' > .commit.json && \
+
+    # Show the config using the CLI
+    CONFIG_OUTPUT=$(../bin/commit --show-config)
+
+    EXPECTED_CONFIG='{
+  "issueRegex": "H[0-9]+",
+  "outputIssuePrefix": "[",
+  "outputIssueSuffix": "]",
+  "outputStringPrefix": "",
+  "outputStringSuffix": " "
+}'
+
+    if [ "$CONFIG_OUTPUT" != "$EXPECTED_CONFIG" ]; then
+        echo "Expected config output:"
+        echo "$EXPECTED_CONFIG"
+        echo "Actual config output:"
+        echo "$CONFIG_OUTPUT"
+        fail_test $TESTNAME
+    fi
+
+    pass_test $TESTNAME
+}
+
 # MARK: - Run Tests
 
 build_if_needed
@@ -356,3 +396,4 @@ test_set_correct_author
 test_use_config_with_empty_regex
 test_commit_with_detached_head
 test_commit_from_another_worktree
+test_show_config

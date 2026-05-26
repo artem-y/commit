@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/artem-y/commit/internal/config"
@@ -21,7 +22,7 @@ func Test_ReadCommitConfig_WhenFileDoesNotExist_ReturnsDefaultConfig(t *testing.
 	defaultConfig := config.MakeDefaultConfig()
 
 	// Act
-	cfg, err := config.ReadCommitConfig(mock, "some/path")
+	cfg, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	for _, invocation := range mock.Invocations {
@@ -55,7 +56,7 @@ func Test_ReadCommitConfig_WhenFilledWithValidSettings_LoadsAllValuesFromConfig(
 	mock.Results.ReadFile.Success = []byte(configJson)
 
 	// Act
-	cfg, err := config.ReadCommitConfig(mock, "some/path")
+	cfg, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err != nil {
@@ -71,13 +72,57 @@ func Test_ReadCommitConfig_WhenFilledWithValidSettings_LoadsAllValuesFromConfig(
 	}
 }
 
+func Test_ReadCommitConfig_ValidatingEmptyFile_ReturnsError(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	mock.Results.ReadFile.Success = []byte(" ")
+
+	// Act
+	_, err := config.ReadCommitConfig(mock, "path/to/empty/file", true)
+
+	// Assert
+	if err == nil {
+		t.Error("Expected an error, got `nil`")
+	}
+	expectedErr := "Issue regex can't be empty. Please update the config file."
+	if err.Error() != expectedErr {
+		t.Errorf(
+			"Expected error '%s', got '%s'",
+			expectedErr,
+			err.Error(),
+		)
+	}
+}
+
+func Test_ReadCommitConfig_WithoutValidatingEmptyFile_ReturnsEmptyConfig(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	mock.Results.ReadFile.Success = []byte("")
+
+	// Act
+	cfg, err := config.ReadCommitConfig(mock, "file/path", false)
+
+	// Assert
+	if err != nil {
+		t.Errorf("Expected no error, got `%s`", err.Error())
+	}
+	expectedConfig := config.CommitConfig{}
+	if !reflect.DeepEqual(cfg, expectedConfig) {
+		t.Errorf(
+			"Expected `%s', got `%s`",
+			makeJSON(expectedConfig),
+			makeJSON(cfg),
+		)
+	}
+}
+
 func Test_ReadCommitConfig_WhenInvalidJson_ReturnsError(t *testing.T) {
 	// Arrange
 	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
 	mock.Results.ReadFile.Success = []byte("{invalid json}")
 
 	// Act
-	_, err := config.ReadCommitConfig(mock, "some/path")
+	_, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err == nil {
@@ -91,7 +136,7 @@ func Test_ReadCommitConfig_WhenFailedToReadFile_ReturnsError(t *testing.T) {
 	mock.Results.ReadFile.Error = errors.New("failed to read file")
 
 	// Act
-	_, err := config.ReadCommitConfig(mock, "some/path")
+	_, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err == nil {
@@ -114,7 +159,7 @@ func Test_ReadCommitConfig_WhenOnlyRegexInConfix_ReturnsConfigWithRegex(t *testi
 	expectedConfig.IssueRegex = expectedRegex
 
 	// Act
-	cfg, err := config.ReadCommitConfig(mock, "some/path")
+	cfg, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err != nil {
@@ -145,13 +190,12 @@ func Test_ReadCommitConfig_WhenIssueRegexIsEmpty_ReturnsError(t *testing.T) {
 	mock.Results.ReadFile.Success = []byte(configJson)
 
 	// Act
-	_, err := config.ReadCommitConfig(mock, "some/path")
+	_, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err == nil {
 		t.Error("Expected an error, got `nil`")
 	}
-
 }
 
 func Test_ReadCommitConfig_WhenIssueRegexIsInvalid_ReturnsError(t *testing.T) {
@@ -161,13 +205,12 @@ func Test_ReadCommitConfig_WhenIssueRegexIsInvalid_ReturnsError(t *testing.T) {
 	mock.Results.ReadFile.Success = []byte(configJson)
 
 	// Act
-	_, err := config.ReadCommitConfig(mock, "some/path")
+	_, err := config.ReadCommitConfig(mock, "some/path", true)
 
 	// Assert
 	if err == nil {
 		t.Error("Expected an error, got `nil`")
 	}
-
 }
 
 func Test_MakeDefaultConfig_CreatesConfigWithDefaultValues(t *testing.T) {
@@ -190,6 +233,98 @@ func Test_MakeDefaultConfig_CreatesConfigWithDefaultValues(t *testing.T) {
 			makeJSON(expectedConfig),
 			makeJSON(cfg),
 		)
+	}
+}
+
+func Test_EncodeConfigAtPath_WithValidConfig_ReturnsConfigAsJson(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	expectedConfig := `{
+  "issueRegex": "SWE-[0-9]+",
+  "outputIssuePrefix": "(",
+  "outputIssueSuffix": ")",
+  "outputStringPrefix": "(( ",
+  "outputStringSuffix": " )) "
+}`
+
+	mock.Results.ReadFile.Success = []byte(expectedConfig)
+
+	// Act
+	cfg, err := config.EncodeConfigAtPath(mock, "some/path")
+	// Assert
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if !reflect.DeepEqual(cfg, mock.Results.ReadFile.Success) {
+		t.Errorf(
+			"Expected config JSON ('%s'), got '%s'",
+			string(mock.Results.ReadFile.Success),
+			string(cfg),
+		)
+	}
+}
+
+func Test_EncodeConfigAtPath_WhenFailedToReadFile_ReturnsError(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	expectedErrorMessage := "Error: Failed to read file"
+	mock.Results.ReadFile.Error = errors.New(expectedErrorMessage)
+
+	// Act
+	cfg, err := config.EncodeConfigAtPath(mock, "a/path")
+
+	// Assert
+	if cfg != nil {
+		t.Errorf("Expected no config, got %v", cfg)
+	}
+	if err == nil {
+		t.Error("Expected an error, got `nil`")
+	}
+	if err.Error() != expectedErrorMessage {
+		t.Errorf("Expected error '%s', got '%v'", expectedErrorMessage, err)
+	}
+}
+
+func Test_EncodeConfigAtPath_WithInvalidJSON_ReturnsError(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	configJsonWithInvalidRegex := "{\"issueRegex\":\"abc}"
+	mock.Results.ReadFile.Success = []byte(configJsonWithInvalidRegex)
+
+	// Act
+	cfg, err := config.EncodeConfigAtPath(mock, "path/to/invalid/config")
+
+	// Assert
+	if cfg != nil {
+		t.Errorf("Expected no config, got %v", cfg)
+	}
+	if err == nil {
+		t.Error("Expected an error, got 'nil'")
+	}
+}
+
+func Test_EncodeConfigAtPath_WhenConfigContainsUnicodeEscapableCharacters_DoesNotEscapeCharacter(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	mock.Results.ReadFile.Success = []byte(`{
+  "issueRegex": "CORE_[0-9]+",
+  "outputIssuePrefix": "<",
+  "outputIssueSuffix": ">",
+  "outputStringPrefix": "<< ",
+  "outputStringSuffix": " >> "
+}`)
+
+	// Act
+	cfg, err := config.EncodeConfigAtPath(mock, "some/path/to/config")
+
+	// Assert
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if strings.Contains(string(cfg), "\\u003c") || strings.Contains(string(cfg), "\\u003e") {
+		t.Errorf("Expected '<' and '>' to stay unescaped, got '%s'", string(cfg))
 	}
 }
 

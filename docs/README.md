@@ -85,6 +85,11 @@ If you don't want to include the `.commit.json` file at the root of your reposit
 ```shell
 commit -config-path=${HOME}/.config/.commit.json "Finally fix everything"
 ```
+### Show Current Config
+To see the config that the tool will apply, use `--show-config`:
+```shell
+commit --show-config
+```
 ### Multiple Issue Numbers
 If the branch has multiple issues in its name, the tool will include them all, comma-separated.  
 For example, the branch named `add-tests-for-CR-127-and-CR-131-features`, the issue regex set to `[A-Z]{2}-[0-9]+`, and the "outputIssuePrefix" and "outputIssueSuffix" settings for the output set to `[` and `]:`, the generated commit message would start with the following:  

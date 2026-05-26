@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"regexp"
@@ -27,7 +28,7 @@ type commitConfigDTO struct {
 }
 
 // Reads config at the file path and unmarshals it into commitConfig struct
-func ReadCommitConfig(fileReader FileReading, configFilePath string) (CommitConfig, error) {
+func ReadCommitConfig(fileReader FileReading, configFilePath string, isValidating bool) (CommitConfig, error) {
 	var cfgDto commitConfigDTO
 
 	_, err := fileReader.Stat(configFilePath)
@@ -38,19 +39,57 @@ func ReadCommitConfig(fileReader FileReading, configFilePath string) (CommitConf
 			return CommitConfig{}, err
 		}
 
-		err = json.Unmarshal(file, &cfgDto)
-		if err != nil {
-			return CommitConfig{}, err
+		if len(bytes.TrimSpace(file)) > 0 {
+			err = json.Unmarshal(file, &cfgDto)
+			if err != nil {
+				return CommitConfig{}, err
+			}
+		} else if isValidating {
+			return CommitConfig{}, validateRegex("")
+		} else {
+			return CommitConfig{}, nil
 		}
 	}
 
 	cfg := makeConfig(cfgDto)
 
-	if err := validateRegex(cfg.IssueRegex); err != nil {
-		return CommitConfig{}, err
+	if isValidating {
+		if err := validateRegex(cfg.IssueRegex); err != nil {
+			return CommitConfig{}, err
+		}
 	}
 
 	return cfg, nil
+}
+
+// Encodes config at the given file path into JSON
+func EncodeConfigAtPath(fileReader FileReading, configFilePath string) ([]byte, error) {
+	isValidating := false
+	cfg, err := ReadCommitConfig(fileReader, configFilePath, isValidating)
+	if err != nil {
+		return nil, err
+	}
+
+	cfgDto := commitConfigDTO{
+		IssueRegex:         &cfg.IssueRegex,
+		OutputIssuePrefix:  &cfg.OutputIssuePrefix,
+		OutputIssueSuffix:  &cfg.OutputIssueSuffix,
+		OutputStringPrefix: &cfg.OutputStringPrefix,
+		OutputStringSuffix: &cfg.OutputStringSuffix,
+	}
+
+	var cfgBuffer bytes.Buffer
+	encoder := json.NewEncoder(&cfgBuffer)
+	encoder.SetIndent("", "  ")
+	encoder.SetEscapeHTML(false)
+
+	if err := encoder.Encode(cfgDto); err != nil {
+		return nil, err
+	}
+
+	configJson := bytes.TrimSuffix(cfgBuffer.Bytes(), []byte("\n"))
+
+	return configJson, nil
 }
 
 // Helper function to create a default config
