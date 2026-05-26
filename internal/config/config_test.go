@@ -72,6 +72,28 @@ func Test_ReadCommitConfig_WhenFilledWithValidSettings_LoadsAllValuesFromConfig(
 	}
 }
 
+func Test_ReadCommitConfig_ValidatingEmptyFile_ReturnsError(t *testing.T) {
+	// Arrange
+	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}
+	mock.Results.ReadFile.Success = []byte(" ")
+
+	// Act
+	_, err := config.ReadCommitConfig(mock, "path/to/empty/file", true)
+
+	// Assert
+	if err == nil {
+		t.Error("Expected an error, got `nil`")
+	}
+	expectedErr := "Issue regex can't be empty. Please update the config file."
+	if err.Error() != expectedErr {
+		t.Errorf(
+			"Expected error '%s', got '%s'",
+			expectedErr,
+			err.Error(),
+		)
+	}
+}
+
 func Test_ReadCommitConfig_WithoutValidatingEmptyFile_ReturnsEmptyConfig(t *testing.T) {
 	// Arrange
 	var mock *mocks.FileReadingMock = &mocks.FileReadingMock{}

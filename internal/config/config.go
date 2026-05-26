@@ -39,11 +39,13 @@ func ReadCommitConfig(fileReader FileReading, configFilePath string, isValidatin
 			return CommitConfig{}, err
 		}
 
-		if len(file) > 0 {
+		if len(bytes.TrimSpace(file)) > 0 {
 			err = json.Unmarshal(file, &cfgDto)
 			if err != nil {
 				return CommitConfig{}, err
 			}
+		} else if isValidating {
+			return CommitConfig{}, validateRegex("")
 		} else {
 			return CommitConfig{}, nil
 		}
